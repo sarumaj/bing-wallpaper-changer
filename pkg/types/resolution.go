@@ -1,0 +1,55 @@
+package types
+
+import (
+	"fmt"
+	"strings"
+)
+
+var (
+	LowDefinition       = Resolution{1366, 768}
+	HighDefinition      = Resolution{1920, 1080}
+	UltraHighDefinition = Resolution{3840, 2160}
+)
+
+var AllowedResolutions = Resolutions{LowDefinition, HighDefinition, UltraHighDefinition}
+
+// Resolution is a struct for screen resolutions.
+type Resolution struct {
+	Width, Height int
+}
+
+// String returns the string representation of the Resolution.
+func (r Resolution) String() string {
+	return fmt.Sprintf("%dx%d", r.Width, r.Height)
+}
+
+// Resolutions is a slice of Resolution.
+type Resolutions []Resolution
+
+// String returns the string representation of the Resolutions.
+func (r Resolutions) String() string {
+	var s []string
+	for _, v := range r {
+		s = append(s, v.String())
+	}
+	return strings.Join(s, ", ")
+}
+
+// ParseResolution parses a string and returns a Resolution.
+func ParseResolution(s string) (Resolution, error) {
+	defaultErr := fmt.Errorf("invalid resolution: %s, allowed values arr: %s", s, AllowedResolutions)
+
+	var r Resolution
+	_, err := fmt.Sscanf(s, "%dx%d", &r.Width, &r.Height)
+	if err != nil {
+		return r, defaultErr
+	}
+
+	switch r {
+	case LowDefinition, HighDefinition, UltraHighDefinition:
+	default:
+		err = defaultErr
+	}
+
+	return r, err
+}
