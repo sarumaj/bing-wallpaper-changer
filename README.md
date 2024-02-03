@@ -9,7 +9,7 @@
 
 # bing-wallpaper-changer
 
-**bing-wallpaper-changer** is a cross-platform compatible wallpaper-changer.
+**bing-wallpaper-changer** is a cross-platform compatible wallpaper-changer (CLI).
 
 It fetches the newest Bing wallpaper and sets it as a desktop background image.
 Custom watermark can be used on the downloaded image.
