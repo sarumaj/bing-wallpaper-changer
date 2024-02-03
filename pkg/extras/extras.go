@@ -8,6 +8,9 @@ import (
 	"bytes"
 	"embed"
 	"io"
+	"path/filepath"
+	"slices"
+	"strings"
 )
 
 const DefaultFontName = "unifont.ttf"
@@ -20,39 +23,48 @@ var fonts embed.FS
 var watermarks embed.FS
 
 // EmbeddedFonts returns a map of available fonts.
-var EmbeddedFonts = func() map[string]io.Reader {
-	m := make(map[string]io.Reader)
-	files, _ := fonts.ReadDir("fonts")
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		r, _ := fonts.Open("fonts/" + file.Name())
-		defer r.Close()
-		b, _ := io.ReadAll(r)
-		m[file.Name()] = bytes.NewReader(b)
-	}
-
-	return m
-}()
+var EmbeddedFonts = getEmbedded(fonts, "fonts")
 
 // EmbeddedWatermarks returns a map of registered watermarks.
-var EmbeddedWatermarks = func() map[string]io.Reader {
-	m := make(map[string]io.Reader)
-	files, _ := watermarks.ReadDir("watermarks")
+var EmbeddedWatermarks = getEmbedded(watermarks, "watermarks")
+
+// Embedded is a map of embedded files.
+type Embedded map[string]io.Reader
+
+// Keys returns the keys of the embedded map.
+func (e Embedded) Keys() []string {
+	names := make([]string, 0, len(e))
+	for k := range e {
+		names = append(names, k)
+	}
+
+	slices.Sort(names)
+	return names
+}
+
+// String returns the keys of the embedded map as a string.
+func (e Embedded) String() string {
+	return strings.Join(e.Keys(), ", ")
+}
+
+// getEmbedded returns a map of embedded files.
+func getEmbedded(fsys embed.FS, path string) Embedded {
+	m := make(Embedded)
+	files, _ := fsys.ReadDir(path)
 
 	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
 
-		r, _ := watermarks.Open("watermarks/" + file.Name())
+		r, _ := fsys.Open(filepath.Join(path, file.Name()))
 		defer r.Close()
-		b, _ := io.ReadAll(r)
-		m[file.Name()] = bytes.NewReader(b)
+
+		buffer := bytes.NewBuffer(nil)
+		_, _ = io.Copy(buffer, r)
+
+		m[file.Name()] = buffer
 	}
 
 	return m
-}()
+}

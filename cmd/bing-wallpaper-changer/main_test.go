@@ -17,7 +17,7 @@ func TestFlow(t *testing.T) {
 
 	t.Logf("Fetched wallpaper: %#v", img)
 
-	if err := img.DrawWatermark("red-dot.png"); err != nil {
+	if err := img.DrawWatermark("red-dot.png", false); err != nil {
 		t.Error(err)
 		return
 	}

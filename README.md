@@ -40,6 +40,7 @@ $ bing-wallpaper-changer -h
 >       --qrcode                      draw the QR code on the wallpaper (default true)
 >       --region string               the region to fetch the wallpaper for, allowed values are: en-CA, zh-CN, de-DE, ja-JP, en-NZ, en-GB, en-US (default "de-DE")
 >       --resolution string           the resolution of the wallpaper, allowed values are: 1366x768, 1920x1080, 3840x2160 (default "1920x1080")
+>       --rotate-counter-clockwise    rotate the watermark counter-clockwise if necessary (default is clockwise)
 >       --watermark string            draw the watermark on the wallpaper (default "sarumaj.png")
 
 ```

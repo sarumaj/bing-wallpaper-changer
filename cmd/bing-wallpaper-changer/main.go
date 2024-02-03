@@ -13,14 +13,15 @@ import (
 )
 
 var config struct {
-	Day               types.Day
-	Region            types.Region
-	Resolution        types.Resolution
-	DrawDescription   bool
-	DrawQRCode        bool
-	Watermark         string
-	DownloadOnly      bool
-	DownloadDirectory string
+	Day                    types.Day
+	Region                 types.Region
+	Resolution             types.Resolution
+	DrawDescription        bool
+	DrawQRCode             bool
+	Watermark              string
+	DownloadOnly           bool
+	DownloadDirectory      string
+	RotateCounterClockwise bool
 }
 
 var logger = log.New(os.Stderr, "bing-wall: ", 0)
@@ -49,6 +50,7 @@ func init() {
 	opts.StringVar(&config.Watermark, "watermark", extras.DefaultWatermarkName, "draw the watermark on the wallpaper")
 	opts.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
 	opts.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
+	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
 	if err := opts.Parse(os.Args[1:]); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
 			logger.Println(err)
@@ -84,7 +86,7 @@ func main() {
 	}
 
 	if config.Watermark != "" {
-		if err := img.DrawWatermark(config.Watermark); err != nil {
+		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
 			pflag.Usage()
 			logger.Fatalln(err)
 		}

@@ -14,7 +14,7 @@ jobs:
         go: [1.21]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    name: Build and release ldap-cli
+    name: Build and release bing-wallpaper-changer
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -47,14 +47,13 @@ jobs:
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
-          TEST_OAT: "true"
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPORTER_ID }}
         with:
           coverageCommand: gocov test ./... -coverprofile=c.out
           coverageLocations: ./c.out:gocov
           debug: true
           prefix: ${{ steps.export_module_name.outputs.MODULE_NAME }}
-          
+
       - name: Precompile binaries and upload assets
         uses: cli/gh-extension-precompile@v1
         with:

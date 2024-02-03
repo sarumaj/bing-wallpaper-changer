@@ -19,7 +19,7 @@ jobs:
         go: [1.21]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    name: Test and report maintainability of ldap-cli
+    name: Test and report maintainability of bing-wallpaper-changer
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -47,7 +47,6 @@ jobs:
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
-          TEST_OAT: "true"
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPORTER_ID }}
         with:
           coverageCommand: gocov test ./... -coverprofile=c.out

@@ -142,7 +142,7 @@ func (img *Image) DrawQRCode(resolution types.Resolution, position types.Positio
 }
 
 // DrawWatermark draws a watermark onto the given image.
-func (img *Image) DrawWatermark(watermarkFile string) error {
+func (img *Image) DrawWatermark(watermarkFile string, rotateCounterClockwise bool) error {
 	var source io.Reader
 	var err error
 	if r, ok := extras.EmbeddedWatermarks[watermarkFile]; ok {
@@ -169,12 +169,16 @@ func (img *Image) DrawWatermark(watermarkFile string) error {
 
 	watermarkBounds := watermark.Bounds()
 	if watermarkBounds.Dx() < watermarkBounds.Dy() {
-		// rotate the image 90 degrees clockwise
+		// rotate the image 90 degrees clockwise or counter-clockwise
 		rotated := image.NewRGBA(image.Rect(0, 0, watermarkBounds.Dy(), watermarkBounds.Dx()))
 		for y := watermarkBounds.Min.Y; y < watermarkBounds.Max.Y; y++ {
 			for x := watermarkBounds.Min.X; x < watermarkBounds.Max.X; x++ {
 				// set each pixel to the corresponding pixel in the original image
-				rotated.Set(watermarkBounds.Bounds().Max.Y-y-1, x, watermark.At(x, y))
+				if rotateCounterClockwise {
+					rotated.Set(y, watermarkBounds.Bounds().Max.X-x-1, watermark.At(x, y))
+				} else {
+					rotated.Set(watermarkBounds.Bounds().Max.Y-y-1, x, watermark.At(x, y))
+				}
 			}
 		}
 
