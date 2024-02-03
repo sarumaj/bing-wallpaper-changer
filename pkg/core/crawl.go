@@ -27,8 +27,6 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		return nil, err
 	}
 
-	fmt.Println(string(jsonRaw))
-
 	path := gjson.GetBytes(jsonRaw, "images.0.url").String()
 	path = regexp.MustCompile(`_\d+x\d+`).ReplaceAllString(path, "_"+resolution.String())
 	uri := "https://www.bing.com" + path

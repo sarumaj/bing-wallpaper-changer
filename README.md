@@ -25,7 +25,7 @@ Done just for fun 😄
 - [x] Place QR code for the copyright links
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper
-  - [x] Rotate if necessary
+  - [x] Rotate if necessary (only clockwise rotation by 90° supported)
 
 ## Usage
 
@@ -43,3 +43,29 @@ $ bing-wallpaper-changer -h
 >       --watermark string            draw the watermark on the wallpaper (default "sarumaj.png")
 
 ```
+
+## Examples
+
+### Default
+
+Using default parameters:
+
+![Bing Wallpaper of the day with QR code, default watermark and title](demo/default.png)
+
+### Resized watermark
+
+Using small PNG watermark: [red-dot.png](pkg/extras/watermarks/red-dot.png)
+
+![Bing Wallpaper of the day with QR code, red-dot watermark and title](demo/red-dot.png)
+
+### Rotated watermark
+
+Using vertical (portrait-mode) PNG watermark: [car.png](pkg/extras/watermarks/car.png)
+
+![Bing Wallpaper of the day with QR code, car watermark and title](demo/car.png)
+
+### Fetching Bing wallpaper for the ja-JP region
+
+Using default parameters with region set to `ja-JP`:
+
+![Bing Wallpaper of the day for ja-JP region with QR code, default watermark and title](demo/unicode.png)
