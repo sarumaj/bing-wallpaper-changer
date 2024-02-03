@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/core"
+	"github.com/sarumaj/bing-wallpaper-changer/pkg/extras"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 )
 
@@ -23,14 +24,14 @@ func TestFlow(t *testing.T) {
 
 	t.Logf("Watermark drawn: %#v", img)
 
-	if err := img.DrawDescription(types.BottomCenter); err != nil {
+	if err := img.DrawDescription(types.BottomCenter, extras.DefaultFontName); err != nil {
 		t.Error(err)
 		return
 	}
 
 	t.Logf("Description drawn: %#v", img)
 
-	if err := img.DrawQRCode(128, types.TopRight); err != nil {
+	if err := img.DrawQRCode(types.HighDefinition, types.TopRight); err != nil {
 		t.Error(err)
 		return
 	}

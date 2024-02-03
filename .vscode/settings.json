@@ -1,19 +1,19 @@
 {
-    "cSpell.words": [
-        "danviddo",
-        "gjson",
-        "gocov",
-        "gofmt",
-        "gofont",
-        "golangci",
-        "gopls",
-        "goregular",
-        "paambaati",
-        "pflag",
-        "qrcode",
-        "reujab",
-        "sarumaj",
-        "tidwall",
-        "webp"
-    ]
+  "cSpell.words": [
+    "Catmull",
+    "copyrightlink",
+    "dawid",
+    "fogleman",
+    "gjson",
+    "gofont",
+    "goregular",
+    "opentype",
+    "pflag",
+    "qrcode",
+    "reujab",
+    "sarumaj",
+    "tidwall",
+    "unifont",
+    "webp"
+  ]
 }

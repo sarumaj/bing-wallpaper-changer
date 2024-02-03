@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -22,47 +23,55 @@ var config struct {
 	DownloadDirectory string
 }
 
-var logger = log.New(os.Stderr, "", 0)
+var logger = log.New(os.Stderr, "bing-wall: ", 0)
 
 func init() {
 	var day int
 	var region string
 	var resolution string
 
-	pflag.Usage = func() {
-		logger.Println("Usage: bing-wallpaper-changer [flags]")
-		pflag.PrintDefaults()
+	opts := pflag.NewFlagSet("bing-wallpaper-changer", pflag.ContinueOnError)
+	opts.Usage = func() {
+		_, _ = fmt.Fprintf(os.Stderr, "Usage of bing-wallpaper-changer:\n\n")
+		_, _ = fmt.Fprintf(os.Stderr, "Flags:\n\n")
+		opts.PrintDefaults()
+		_, _ = fmt.Fprintln(os.Stderr, "")
 	}
 
 	defaultDownloadDirectory, _ := os.UserHomeDir()
 	defaultDownloadDirectory += "/Pictures/BingWallpapers"
 
-	pflag.IntVar(&day, "day", int(types.Today), "the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago")
-	pflag.StringVar(&region, "region", types.Germany.String(), fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", types.AllowedRegions))
-	pflag.StringVar(&resolution, "resolution", types.HighDefinition.String(), fmt.Sprintf("the resolution of the wallpaper, allowed values are: %s", types.AllowedResolutions))
-	pflag.BoolVar(&config.DrawDescription, "description", true, "draw the description on the wallpaper")
-	pflag.BoolVar(&config.DrawQRCode, "qrcode", true, "draw the QR code on the wallpaper")
-	pflag.StringVar(&config.Watermark, "watermark", extras.DefaultWatermarkName, "draw the watermark on the wallpaper")
-	pflag.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
-	pflag.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
-	pflag.Parse()
+	opts.IntVar(&day, "day", int(types.Today), "the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago")
+	opts.StringVar(&region, "region", types.Germany.String(), fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", types.AllowedRegions))
+	opts.StringVar(&resolution, "resolution", types.HighDefinition.String(), fmt.Sprintf("the resolution of the wallpaper, allowed values are: %s", types.AllowedResolutions))
+	opts.BoolVar(&config.DrawDescription, "description", true, "draw the description on the wallpaper")
+	opts.BoolVar(&config.DrawQRCode, "qrcode", true, "draw the QR code on the wallpaper")
+	opts.StringVar(&config.Watermark, "watermark", extras.DefaultWatermarkName, "draw the watermark on the wallpaper")
+	opts.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
+	opts.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
+	if err := opts.Parse(os.Args[1:]); err != nil {
+		if !errors.Is(err, pflag.ErrHelp) {
+			logger.Println(err)
+		}
+		os.Exit(0)
+	}
 
 	var err error
 	config.Region, err = types.ParseLocale(region)
 	if err != nil {
-		pflag.Usage()
+		opts.Usage()
 		logger.Fatalln(err)
 	}
 
 	config.Day = types.Day(day)
 	if err := config.Day.IsValid(); err != nil {
-		pflag.Usage()
+		opts.Usage()
 		logger.Fatalln(err)
 	}
 
 	config.Resolution, err = types.ParseResolution(resolution)
 	if err != nil {
-		pflag.Usage()
+		opts.Usage()
 		logger.Fatalln(err)
 	}
 }
@@ -82,14 +91,14 @@ func main() {
 	}
 
 	if config.DrawDescription {
-		if err := img.DrawDescription(types.TopCenter); err != nil {
+		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
 			pflag.Usage()
 			logger.Fatalln(err)
 		}
 	}
 
 	if config.DrawQRCode {
-		if err := img.DrawQRCode(128, types.BottomLeft); err != nil {
+		if err := img.DrawQRCode(config.Resolution, types.BottomLeft); err != nil {
 			pflag.Usage()
 			logger.Fatalln(err)
 		}

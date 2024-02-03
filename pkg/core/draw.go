@@ -14,12 +14,11 @@ import (
 	"github.com/skip2/go-qrcode"
 	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 )
 
 // DrawDescription draws a title onto the given image.
-func (img *Image) DrawDescription(position types.Position) error {
+func (img *Image) DrawDescription(position types.Position, fontName string) error {
 	imgBounds := img.Bounds()
 
 	// create a new image with the same dimensions as the original.
@@ -28,8 +27,18 @@ func (img *Image) DrawDescription(position types.Position) error {
 	// copy the original image onto the new image.
 	ctx.DrawImage(img.Image, 0, 0)
 
+	fontDataReader, ok := extras.EmbeddedFonts[fontName]
+	if !ok {
+		return fmt.Errorf("unknown font: %s", fontName)
+	}
+
+	data, err := io.ReadAll(fontDataReader)
+	if err != nil {
+		return err
+	}
+
 	// parse font
-	parsed, err := opentype.Parse(goregular.TTF)
+	parsed, err := opentype.Parse(data)
 	if err != nil {
 		return err
 	}
@@ -83,8 +92,23 @@ func (img *Image) DrawDescription(position types.Position) error {
 }
 
 // DrawQRCode draws a QR code onto the given image.
-func (img *Image) DrawQRCode(size int, position types.Position) error {
-	x_offset, y_offset := 10, 10
+func (img *Image) DrawQRCode(resolution types.Resolution, position types.Position) error {
+	var size int
+	switch resolution {
+	case types.LowDefinition:
+		size = 128
+
+	case types.HighDefinition:
+		size = 164
+
+	case types.UltraHighDefinition:
+		size = 192
+
+	default:
+		return fmt.Errorf("unsupported resolution: %s, expected any of: %s", resolution, types.AllowedResolutions)
+
+	}
+
 	coder, err := qrcode.New(img.SearchURL, qrcode.Medium)
 	if err != nil {
 		return err
@@ -94,6 +118,7 @@ func (img *Image) DrawQRCode(size int, position types.Position) error {
 	ctx := gg.NewContextForRGBA(image.NewRGBA(imgBounds))
 	ctx.DrawImage(img.Image, 0, 0)
 
+	x_offset, y_offset := 10, 10
 	switch position {
 	case types.TopLeft:
 		ctx.DrawImage(coder.Image(size), x_offset, y_offset)
@@ -120,7 +145,7 @@ func (img *Image) DrawQRCode(size int, position types.Position) error {
 func (img *Image) DrawWatermark(watermarkFile string) error {
 	var source io.Reader
 	var err error
-	if r, ok := extras.RegisteredWatermarks[watermarkFile]; ok {
+	if r, ok := extras.EmbeddedWatermarks[watermarkFile]; ok {
 		source = r
 
 	} else {
@@ -142,11 +167,28 @@ func (img *Image) DrawWatermark(watermarkFile string) error {
 		return err
 	}
 
-	// resize watermark to fit the wallpaper dimensions
-	resized := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
-	draw.CatmullRom.Scale(resized, resized.Rect, watermark, watermark.Bounds(), draw.Over, nil)
+	watermarkBounds := watermark.Bounds()
+	if watermarkBounds.Dx() < watermarkBounds.Dy() {
+		// rotate the image 90 degrees clockwise
+		rotated := image.NewRGBA(image.Rect(0, 0, watermarkBounds.Dy(), watermarkBounds.Dx()))
+		for y := watermarkBounds.Min.Y; y < watermarkBounds.Max.Y; y++ {
+			for x := watermarkBounds.Min.X; x < watermarkBounds.Max.X; x++ {
+				// set each pixel to the corresponding pixel in the original image
+				rotated.Set(watermarkBounds.Bounds().Max.Y-y-1, x, watermark.At(x, y))
+			}
+		}
 
-	ctx := gg.NewContextForRGBA(image.NewRGBA(img.Bounds()))
+		watermark = rotated
+		watermarkBounds = rotated.Bounds()
+	}
+
+	imgBounds := img.Bounds()
+
+	// resize watermark to fit the wallpaper dimensions
+	resized := image.NewRGBA(image.Rect(0, 0, imgBounds.Dx(), imgBounds.Dy()))
+	draw.CatmullRom.Scale(resized, resized.Rect, watermark, watermarkBounds, draw.Over, nil)
+
+	ctx := gg.NewContextForRGBA(image.NewRGBA(imgBounds))
 
 	// copy the original image onto the new image
 	ctx.DrawImage(img.Image, 0, 0)

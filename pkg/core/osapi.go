@@ -11,6 +11,9 @@ func GetWallpaper() (string, error) {
 
 // SetWallpaper sets the wallpaper from the given path.
 func SetWallpaper(path string) error {
-	wallpaper.SetMode(wallpaper.Fit)
+	if err := wallpaper.SetMode(wallpaper.Fit); err != nil {
+		return err
+	}
+
 	return wallpaper.SetFromFile(path)
 }
