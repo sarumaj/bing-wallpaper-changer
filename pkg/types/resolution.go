@@ -45,11 +45,11 @@ func ParseResolution(s string) (Resolution, error) {
 		return r, defaultErr
 	}
 
-	switch r {
-	case LowDefinition, HighDefinition, UltraHighDefinition:
-	default:
-		err = defaultErr
+	for _, allowed := range AllowedResolutions {
+		if r == allowed {
+			return r, nil
+		}
 	}
 
-	return r, err
+	return Resolution{}, defaultErr
 }

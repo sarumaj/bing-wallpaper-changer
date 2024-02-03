@@ -22,24 +22,34 @@ func (p Position) String() string {
 	switch p {
 	case TopLeft:
 		return "TopLeft"
+
 	case TopRight:
 		return "TopRight"
+
 	case BottomLeft:
 		return "BottomLeft"
+
 	case BottomRight:
 		return "BottomRight"
+
 	case TopCenter:
 		return "TopCenter"
+
 	case BottomCenter:
 		return "BottomCenter"
+
 	case CenterLeft:
 		return "CenterLeft"
+
 	case CenterRight:
 		return "CenterRight"
+
 	case Center:
 		return "Center"
+
 	default:
 		return "Unknown"
+
 	}
 }
 

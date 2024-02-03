@@ -40,11 +40,13 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 	// parse font
 	parsed, err := opentype.Parse(data)
 	if err != nil {
+		fmt.Println("error parsing font")
 		return err
 	}
 
 	face, err := opentype.NewFace(parsed, &opentype.FaceOptions{Size: 18, DPI: 72, Hinting: font.HintingNone})
 	if err != nil {
+		fmt.Println("error creating font face")
 		return err
 	}
 

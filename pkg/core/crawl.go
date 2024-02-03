@@ -18,7 +18,7 @@ import (
 )
 
 // bindURL is the URL to fetch the Bing wallpaper.
-const bingURL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=%d&n=1&mkt=%s"
+var bingURL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=%d&n=1&mkt=%s"
 
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
 func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution) (*Image, error) {

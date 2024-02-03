@@ -24,16 +24,65 @@ var config struct {
 	RotateCounterClockwise bool
 }
 
+// BuildDate is the date when the binary was built.
+var BuildDate = "2024-02-03 22:38:22 UTC"
+
+// Version is the version of the binary.
+var Version = "v1.0.0"
+
+// logger is the logger used to log messages.
 var logger = log.New(os.Stderr, "bing-wall: ", 0)
 
-func init() {
+func main() {
+	parseArgs(os.Args[1:]...)
+
+	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	if config.Watermark != "" {
+		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
+			logger.Fatalln(err)
+		}
+	}
+
+	if config.DrawDescription {
+		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
+			logger.Fatalln(err)
+		}
+	}
+
+	if config.DrawQRCode {
+		if err := img.DrawQRCode(config.Resolution, types.BottomLeft); err != nil {
+			logger.Fatalln(err)
+		}
+	}
+
+	path, err := img.EncodeAndDump(config.DownloadDirectory)
+	if err != nil {
+		logger.Fatalln(err)
+	}
+
+	logger.Printf("Wallpaper saved to: %s", path)
+	if !config.DownloadOnly {
+		if err := core.SetWallpaper(path); err != nil {
+			logger.Fatalln(err)
+		}
+
+		logger.Printf("Wallpaper set to: %s", path)
+	}
+}
+
+// parseArgs parses the command line arguments and sets the configuration accordingly.
+func parseArgs(args ...string) {
 	var day int
 	var region string
 	var resolution string
 
 	opts := pflag.NewFlagSet("bing-wallpaper-changer", pflag.ContinueOnError)
 	opts.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage of bing-wallpaper-changer:\n\n")
+		_, _ = fmt.Fprintf(os.Stderr, "Usage of bing-wallpaper-changer [Version: %s, BuildDate: %s]:\n\n", BuildDate, Version)
 		_, _ = fmt.Fprintf(os.Stderr, "Flags:\n\n")
 		opts.PrintDefaults()
 		_, _ = fmt.Fprintln(os.Stderr, "")
@@ -51,7 +100,8 @@ func init() {
 	opts.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
 	opts.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
 	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
-	if err := opts.Parse(os.Args[1:]); err != nil {
+
+	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
 			logger.Println(err)
 		}
@@ -75,50 +125,5 @@ func init() {
 	if err != nil {
 		opts.Usage()
 		logger.Fatalln(err)
-	}
-}
-
-func main() {
-	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
-	if err != nil {
-		pflag.Usage()
-		logger.Fatalln(err)
-	}
-
-	if config.Watermark != "" {
-		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
-			pflag.Usage()
-			logger.Fatalln(err)
-		}
-	}
-
-	if config.DrawDescription {
-		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
-			pflag.Usage()
-			logger.Fatalln(err)
-		}
-	}
-
-	if config.DrawQRCode {
-		if err := img.DrawQRCode(config.Resolution, types.BottomLeft); err != nil {
-			pflag.Usage()
-			logger.Fatalln(err)
-		}
-	}
-
-	path, err := img.EncodeAndDump(config.DownloadDirectory)
-	if err != nil {
-		pflag.Usage()
-		logger.Fatalln(err)
-	}
-
-	logger.Printf("Wallpaper saved to: %s", path)
-	if !config.DownloadOnly {
-		if err := core.SetWallpaper(path); err != nil {
-			pflag.Usage()
-			logger.Fatalln(err)
-		}
-
-		logger.Printf("Wallpaper set to: %s", path)
 	}
 }

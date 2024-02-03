@@ -6,8 +6,8 @@ buildDate="$(date -u "+%Y-%m-%d %H:%M:%S UTC")"
 
 echo "got version: ${version}, buildDate: ${buildDate}"
 
-sed -E "s/^(var Version = \")[^\"]*(\".*)\$/\1${version}\2/" < cmd/ldap-cli/main.go | \
-sed -E "s/^(var BuildDate = \")[^\"]*(\".*)\$/\1${buildDate}\2/" > cmd/ldap-cli/main.go.new
+sed -E "s/^(var Version = \")[^\"]*(\".*)\$/\1${version}\2/" <cmd/bing-wallpaper-changer/main.go |
+    sed -E "s/^(var BuildDate = \")[^\"]*(\".*)\$/\1${buildDate}\2/" >cmd/bing-wallpaper-changer/main.go.new
 
-mv cmd/ldap-cli/main.go.new cmd/ldap-cli/main.go
-echo "updated cmd/ldap-cli/main.go"
+mv cmd/bing-wallpaper-changer/main.go.new cmd/bing-wallpaper-changer/main.go
+echo "updated cmd/bing-wallpaper-changer/main.go"

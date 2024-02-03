@@ -65,29 +65,11 @@ func (r Regions) String() string {
 
 // ParseLocale parses a string and returns a Region.
 func ParseLocale(s string) (Region, error) {
-	switch s {
-	case "en-CA":
-		return Canada, nil
-
-	case "zh-CN":
-		return China, nil
-
-	case "de-DE":
-		return Germany, nil
-
-	case "ja-JP":
-		return Japan, nil
-
-	case "en-NZ":
-		return NewZealand, nil
-
-	case "en-GB":
-		return UnitedKingdom, nil
-
-	case "en-US":
-		return UnitedStates, nil
-
-	default:
-		return 0, fmt.Errorf("unsupported region: %s, expected any of: %s", s, AllowedRegions)
+	for _, allowed := range AllowedRegions {
+		if s == allowed.String() {
+			return allowed, nil
+		}
 	}
+
+	return -1, fmt.Errorf("unsupported region: %s, expected any of: %s", s, AllowedRegions)
 }
