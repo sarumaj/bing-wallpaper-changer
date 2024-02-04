@@ -4,6 +4,12 @@
 [![Maintainability](https://img.shields.io/codeclimate/maintainability-percentage/sarumaj/bing-wallpaper-changer.svg)](https://codeclimate.com/github/sarumaj/bing-wallpaper-changer/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/147f265284b27931c2d2/test_coverage)](https://codeclimate.com/github/sarumaj/bing-wallpaper-changer/test_coverage)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sarumaj/bing-wallpaper-changer.svg)](https://pkg.go.dev/github.com/sarumaj/bing-wallpaper-changer)
+[![Go version](https://img.shields.io/github/go-mod/go-version/sarumaj/bing-wallpaper-changer?logo=go&label=&labelColor=gray)](https://go.dev)
+[![Release](https://img.shields.io/github/v/release/sarumaj/bing-wallpaper-changer?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
+[![Release Date](https://img.shields.io/github/release-date/sarumaj/bing-wallpaper-changer?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
+[![Commits since latest release](https://img.shields.io/github/commits-since/sarumaj/bing-wallpaper-changer/latest?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
+[![Downloads (all assets, all releases)](https://img.shields.io/github/downloads/sarumaj/bing-wallpaper-changer/total?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases)
+[![Downloads (all assets, latest release)](https://img.shields.io/github/downloads/sarumaj/bing-wallpaper-changer/latest/total?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
 
 ---
 
