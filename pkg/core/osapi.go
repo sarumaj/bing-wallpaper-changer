@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/reujab/wallpaper"
+	"github.com/rawnly/go-wallpaper"
 )
 
 // GetWallpaper returns the path to the current wallpaper.

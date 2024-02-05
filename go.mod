@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/fogleman/gg v1.3.0
-	github.com/reujab/wallpaper v0.0.0-20210630195606-5f9f655b3740
+	github.com/rawnly/go-wallpaper v1.0.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.5
 	github.com/tidwall/gjson v1.17.0

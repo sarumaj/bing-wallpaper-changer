@@ -8,8 +8,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORR
 github.com/jtolds/gls v4.20.0+incompatible/go.mod h1:QJZ7F/aHp+rZTRtaJ1ow/lLfFfVYBRgL+9YlvaHOwJU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/reujab/wallpaper v0.0.0-20210630195606-5f9f655b3740 h1:X6IDPPN+zrSClp0Q+JiERA//d8L0WcU5MqcGeulCW1A=
-github.com/reujab/wallpaper v0.0.0-20210630195606-5f9f655b3740/go.mod h1:WYwPVmM/8szeItLeWkwZSLRvQgrvsvstRzgznR8+E4Q=
+github.com/rawnly/go-wallpaper v1.0.2 h1:ttmYCIMwzjuPDTpL7pG9eXjN8PZ3TOVu8wEKO9ojuFA=
+github.com/rawnly/go-wallpaper v1.0.2/go.mod h1:qpQ8yj7TK2yZL2YtBjbGf8l0QwtHRwjXfW28j1XjhBs=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
