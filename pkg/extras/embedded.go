@@ -44,7 +44,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 
 		var r io.ReadCloser
 		var err error
-		r, err = fsys.Open(filepath.Join(path, file.Name()))
+		r, err = fsys.Open(filepath.ToSlash(filepath.Join(path, file.Name())))
 		if err != nil {
 			panic(err)
 		}
