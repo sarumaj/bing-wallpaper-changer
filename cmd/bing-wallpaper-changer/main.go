@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/blang/semver"
+	"github.com/creativeprojects/go-selfupdate"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/core"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/extras"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
@@ -24,6 +27,9 @@ var config struct {
 	RotateCounterClockwise bool
 }
 
+// name of remote code repository mirror
+const remoteRepository = "sarumaj/bing-wallpaper-changer"
+
 // BuildDate is the date when the binary was built.
 var BuildDate = "2024-02-03 22:38:22 UTC"
 
@@ -34,6 +40,7 @@ var Version = "v1.0.0"
 var logger = log.New(os.Stderr, "bing-wall: ", 0)
 
 func main() {
+	checkVersionOrUpdate()
 	parseArgs(os.Args[1:]...)
 
 	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
@@ -66,7 +73,7 @@ func main() {
 
 	logger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
-		if err := core.SetWallpaper(path); err != nil {
+		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
 			logger.Fatalln(err)
 		}
 
@@ -126,4 +133,40 @@ func parseArgs(args ...string) {
 		opts.Usage()
 		logger.Fatalln(err)
 	}
+}
+
+// checkVersionOrUpdate checks if there is a new version available and updates the binary if necessary.
+func checkVersionOrUpdate() {
+	parsed, err := semver.ParseTolerant(Version)
+	if err != nil {
+		logger.Printf("Failed to parse version: %s", err)
+		return
+	}
+
+	repository := selfupdate.ParseSlug(remoteRepository)
+	latest, found, err := selfupdate.DetectLatest(context.Background(), repository)
+	if err != nil {
+		logger.Printf("Failed to parse version: %s", err)
+		return
+	}
+
+	if !found {
+		logger.Printf("No update found")
+		return
+	}
+
+	if latest.GreaterThan(parsed.String()) {
+		up, err := selfupdate.NewUpdater(selfupdate.Config{Validator: &selfupdate.SHAValidator{}})
+		if err != nil {
+			logger.Printf("Failed to create updater: %s", err)
+			return
+		}
+
+		if _, err := up.UpdateSelf(context.Background(), parsed.String(), repository); err != nil {
+			logger.Printf("Failed to update: %s", err)
+			return
+		}
+	}
+
+	logger.Printf("Current version %s is the latest", Version)
 }
