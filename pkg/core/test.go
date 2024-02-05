@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// setupTestImage returns a test image
+// SetupTestImage returns a test image
 func SetupTestImage() *Image {
 	return &Image{
 		Description: "Test Wallpaper",

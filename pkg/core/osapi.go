@@ -4,6 +4,7 @@ import (
 	"github.com/rawnly/go-wallpaper"
 )
 
+// Mode represents the wallpaper setting mode.
 type Mode = wallpaper.Mode
 
 const (

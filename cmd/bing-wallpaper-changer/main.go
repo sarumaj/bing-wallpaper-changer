@@ -125,7 +125,7 @@ func parseArgs(args ...string) {
 
 	opts := pflag.NewFlagSet("bing-wallpaper-changer", pflag.ContinueOnError)
 	opts.Usage = func() {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage of bing-wallpaper-changer [Version: %s, BuildDate: %s]:\n\n", BuildDate, Version)
+		_, _ = fmt.Fprintf(os.Stderr, "Usage of bing-wallpaper-changer [Version: %s, BuildDate: %s]:\n\n", Version, BuildDate)
 		_, _ = fmt.Fprintf(os.Stderr, "Flags:\n\n")
 		opts.PrintDefaults()
 		_, _ = fmt.Fprintln(os.Stderr, "")
