@@ -3,11 +3,15 @@ package core
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/image/webp"
 )
 
 // Image is a wrapper around the image.Image interface.
@@ -59,5 +63,27 @@ func (img *Image) EncodeAndDump(targetDir string) (string, error) {
 		return "", err
 	}
 
+	defer target.Close()
+
 	return target.Name(), png.Encode(target, img)
+}
+
+// getDecoder returns the decoder for the given file path.
+func getDecoder(path string) (decoder func(io.Reader) (image.Image, error), err error) {
+	switch ext := filepath.Ext(path); ext {
+	case ".jpg", ".jpeg":
+		decoder = jpeg.Decode
+
+	case ".png":
+		decoder = png.Decode
+
+	case ".webp":
+		decoder = webp.Decode
+
+	default:
+		return nil, fmt.Errorf("unsupported file type: %s", ext)
+
+	}
+
+	return decoder, nil
 }

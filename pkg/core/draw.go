@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"io"
+	"math"
 	"os"
 	"strings"
 
@@ -31,6 +32,7 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 	if !ok {
 		return fmt.Errorf("unknown font: %s", fontName)
 	}
+	defer fontDataReader.Close()
 
 	data, err := io.ReadAll(fontDataReader)
 	if err != nil {
@@ -52,21 +54,33 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 
 	// measure text bounding box
 	ctx.SetFontFace(face)
+
+	noLines := 1.0
 	text, lineSpacing := img.Description, 1.2
 	textWidth, textHeight := ctx.MeasureString(text)
-	if textWidth > float64(imgBounds.Dx()) {
-		text = strings.Join(ctx.WordWrap(text, float64(imgBounds.Dx())), "\n")
+
+	if maxWidth := 0.6 * float64(imgBounds.Dx()); textWidth > maxWidth {
+		lines := ctx.WordWrap(text, maxWidth)
+		noLines = float64(len(lines))
+		text = strings.Join(lines, "\n")
 		textWidth, textHeight = ctx.MeasureMultilineString(text, lineSpacing)
 	}
 
-	x_margin, y_margin, r := 10.0, 10.0, textHeight*lineSpacing/5
+	lineHeight := textHeight / noLines
+	textHeight = lineHeight*3/2 + lineHeight*(noLines-1)
+
+	y_margin, r := 50.0, textHeight/5
+	if r > y_margin {
+		r = y_margin
+	}
+
 	var x, y, w, h float64
 	switch position {
 	case types.TopCenter:
-		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-x_margin, y_margin, textWidth+x_margin*2, y_margin+textHeight
+		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-r, y_margin+r, textWidth+r*2, textHeight+2*r
 
 	case types.BottomCenter:
-		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-x_margin, float64(imgBounds.Dy())-textHeight-y_margin*2, textWidth+x_margin*2, y_margin+textHeight
+		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-r, float64(imgBounds.Dy())-textHeight*3/2-y_margin-r, textWidth+r*2, textHeight+2*r
 
 	default:
 		return fmt.Errorf("unsupported position: %s, expected any of: %s", position, types.Positions{types.TopCenter, types.BottomCenter})
@@ -80,14 +94,13 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 	ctx.Stroke()
 
 	// fill the text box with a semi-transparent black color (opacity of 50%)
-	ctx.SetColor(color.RGBA{R: 0, G: 0, B: 0, A: 128})
+	ctx.SetColor(color.RGBA{R: 0, G: 0, B: 0, A: 164})
 	ctx.DrawRoundedRectangle(x, y, w, h, r)
 	ctx.Fill()
 
 	// draw the text
 	ctx.SetColor(color.White)
-	//ctx.DrawString(img.Description, x, y)
-	ctx.DrawStringWrapped(text, x+x_margin, y, 0.0, 0.0, float64(imgBounds.Dx()), lineSpacing, gg.AlignLeft)
+	ctx.DrawStringWrapped(text, x+r, y+r, 0.0, 0.0, w-2*r, lineSpacing, gg.AlignCenter)
 
 	img.Image = ctx.Image()
 	return nil
@@ -118,26 +131,57 @@ func (img *Image) DrawQRCode(resolution types.Resolution, position types.Positio
 
 	imgBounds := img.Bounds()
 	ctx := gg.NewContextForRGBA(image.NewRGBA(imgBounds))
+
+	// copy the original image onto the new image.
 	ctx.DrawImage(img.Image, 0, 0)
 
-	x_offset, y_offset := 10, 10
+	// generate QR code.
+	x_offset, y_offset, qrCodeImg := 50, 50, coder.Image(size)
+
+	// blur edges of QR code image
+	qrCodeImgTransparent := image.NewRGBA(image.Rect(0, 0, size, size))
+	center := float64(size) / 2                     // max distance from a pixel at the border to the center
+	margin := 0.95                                  // margin, at which blur transition begins
+	smooth := (margin - 1) * center / math.Log(0.1) // level of blur when the distance between the margin and center is maximal (1 - 0.1/255 = 96%)
+
+	for x := 0.0; x < float64(size); x++ {
+		for y := 0.0; y < float64(size); y++ {
+			r, g, b, _ := qrCodeImg.At(int(x), int(y)).RGBA()
+			a := uint32(196) // make image semi-transparent per default
+
+			// calculate distance difference and calculate blur level (transparency) if besides margin
+			if d := math.Max(math.Abs(x-center), math.Abs(y-center)); d > margin*center {
+				a = uint32(float64(a) * math.Exp((margin*center-d)/smooth))
+			}
+
+			// apply
+			qrCodeImgTransparent.Set(int(x), int(y), color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)})
+		}
+	}
+
+	qrCodeImg = qrCodeImgTransparent
+
+	x, y := 0, 0
 	switch position {
 	case types.TopLeft:
-		ctx.DrawImage(coder.Image(size), x_offset, y_offset)
+		x, y = x_offset, y_offset
 
 	case types.TopRight:
-		ctx.DrawImage(coder.Image(size), imgBounds.Dx()-size-x_offset, y_offset)
+		x, y = imgBounds.Dx()-size-x_offset, y_offset
 
 	case types.BottomLeft:
-		ctx.DrawImage(coder.Image(size), x_offset, imgBounds.Dy()-size-y_offset)
+		x, y = x_offset, imgBounds.Dy()-size-y_offset
 
 	case types.BottomRight:
-		ctx.DrawImage(coder.Image(size), imgBounds.Dx()-size-x_offset, imgBounds.Dy()-size-y_offset)
+		x, y = imgBounds.Dx()-size-x_offset, imgBounds.Dy()-size-y_offset
 
 	default:
 		return fmt.Errorf("unsupported position: %s, expected any of: %s", position, types.Positions{types.TopLeft, types.TopRight, types.BottomLeft, types.BottomRight})
 
 	}
+
+	// draw QR code image.
+	ctx.DrawImage(qrCodeImg, x, y)
 
 	img.Image = ctx.Image()
 	return nil
@@ -145,7 +189,7 @@ func (img *Image) DrawQRCode(resolution types.Resolution, position types.Positio
 
 // DrawWatermark draws a watermark onto the given image.
 func (img *Image) DrawWatermark(watermarkFile string, rotateCounterClockwise bool) error {
-	var source io.Reader
+	var source io.ReadCloser
 	var err error
 	if r, ok := extras.EmbeddedWatermarks[watermarkFile]; ok {
 		source = r
@@ -158,6 +202,7 @@ func (img *Image) DrawWatermark(watermarkFile string, rotateCounterClockwise boo
 	if err != nil {
 		return err
 	}
+	defer source.Close()
 
 	decode, err := getDecoder(watermarkFile)
 	if err != nil {

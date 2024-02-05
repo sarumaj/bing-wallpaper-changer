@@ -54,7 +54,7 @@ func main() {
 	}
 
 	if config.DrawQRCode {
-		if err := img.DrawQRCode(config.Resolution, types.BottomLeft); err != nil {
+		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
 			logger.Fatalln(err)
 		}
 	}

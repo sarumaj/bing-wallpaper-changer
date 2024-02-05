@@ -3,18 +3,13 @@ package core
 import (
 	"bytes"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"regexp"
 
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/tidwall/gjson"
-	"golang.org/x/image/webp"
 )
 
 // bindURL is the URL to fetch the Bing wallpaper.
@@ -55,7 +50,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 
 	return &Image{
 		Description: fmt.Sprintf(
-			"%q, %s",
+			"%s, %s",
 			gjson.GetBytes(jsonRaw, "images.0.title").String(),
 			gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
 		),
@@ -73,24 +68,4 @@ func fetch(uri string) ([]byte, error) {
 	}
 
 	return io.ReadAll(resp.Body)
-}
-
-// getDecoder returns the decoder for the given file path.
-func getDecoder(path string) (decoder func(io.Reader) (image.Image, error), err error) {
-	switch ext := filepath.Ext(path); ext {
-	case ".jpg", ".jpeg":
-		decoder = jpeg.Decode
-
-	case ".png":
-		decoder = png.Decode
-
-	case ".webp":
-		decoder = webp.Decode
-
-	default:
-		return nil, fmt.Errorf("unsupported file type: %s", ext)
-
-	}
-
-	return decoder, nil
 }

@@ -14,7 +14,7 @@ import (
 )
 
 // Embedded is a map of embedded files.
-type Embedded map[string]io.Reader
+type Embedded map[string]io.ReadCloser
 
 // Keys returns the keys of the embedded map.
 func (e Embedded) Keys() []string {
