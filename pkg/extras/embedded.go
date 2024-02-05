@@ -7,7 +7,6 @@ package extras
 import (
 	"compress/gzip"
 	"embed"
-	"fmt"
 	"io"
 	"path/filepath"
 	"slices"
@@ -53,7 +52,6 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 		defer r.Close()
 
 		if filepath.Ext(file.Name()) == ".gz" {
-			fmt.Println(filepath.Ext(file.Name()))
 			r, err = gzip.NewReader(r)
 			if err != nil {
 				panic(err)
