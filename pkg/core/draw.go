@@ -42,14 +42,12 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 	// parse font
 	parsed, err := opentype.Parse(data)
 	if err != nil {
-		fmt.Println("error parsing font")
-		return err
+		return fmt.Errorf("error parsing font: %v", err)
 	}
 
 	face, err := opentype.NewFace(parsed, &opentype.FaceOptions{Size: 18, DPI: 72, Hinting: font.HintingNone})
 	if err != nil {
-		fmt.Println("error creating font face")
-		return err
+		return fmt.Errorf("error creating font face: %v", err)
 	}
 
 	// measure text bounding box
@@ -93,7 +91,7 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 	ctx.DrawRoundedRectangle(x, y, w, h, r)
 	ctx.Stroke()
 
-	// fill the text box with a semi-transparent black color (opacity of 50%)
+	// fill the text box with a semi-transparent black color (opacity of 64%)
 	ctx.SetColor(color.RGBA{R: 0, G: 0, B: 0, A: 164})
 	ctx.DrawRoundedRectangle(x, y, w, h, r)
 	ctx.Fill()
@@ -149,7 +147,7 @@ func (img *Image) DrawQRCode(resolution types.Resolution, position types.Positio
 			r, g, b, _ := qrCodeImg.At(int(x), int(y)).RGBA()
 			a := uint32(196) // make image semi-transparent per default
 
-			// calculate distance difference and calculate blur level (transparency) if besides margin
+			// calculate distance difference and calculate blur level (transparency) besides margin
 			if d := math.Max(math.Abs(x-center), math.Abs(y-center)); d > margin*center {
 				a = uint32(float64(a) * math.Exp((margin*center-d)/smooth))
 			}
