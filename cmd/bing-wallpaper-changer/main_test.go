@@ -10,6 +10,12 @@ import (
 )
 
 func TestFlow(t *testing.T) {
+	tempDir := t.TempDir()
+
+	if core.FromMock(t) {
+		core.MockServers(t)
+	}
+
 	type args struct {
 		resolution     types.Resolution
 		region         types.Region
@@ -17,8 +23,6 @@ func TestFlow(t *testing.T) {
 		qrcodePosition types.Position
 		titlePosition  types.Position
 	}
-
-	tempDir := t.TempDir()
 
 	for _, tt := range []struct {
 		name    string
@@ -31,7 +35,8 @@ func TestFlow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := func(t testing.TB) error {
 				t.Helper()
-				img, err := core.DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution)
+
+				img, err := core.DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution, "")
 				if err != nil {
 					return fmt.Errorf("DownloadAndDecode() failed: %w", err)
 				}

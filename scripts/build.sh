@@ -15,6 +15,7 @@ supported_platforms=(
 
 VERSION="$1"
 BUILD_DATE="$(date -u "+%Y-%m-%d %H:%M:%S UTC")"
+HIRAGANA_API_APPLICATION_ID="${HIRAGANA_API_APPLICATION_ID:-}"
 
 echo "VERSION=${VERSION} BUILD_DATE=${BUILD_DATE}"
 
@@ -32,7 +33,7 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${CGO_ENABLED:-0}" go build \
         -trimpath \
-        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags=-static" \
+        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -X 'main.HiraganaApiApplicationID=${HIRAGANA_API_APPLICATION_ID}' -extldflags=-static" \
         -tags="osusergo netgo static_build" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"

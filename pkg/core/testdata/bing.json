@@ -1,0 +1,28 @@
+{
+  "images": [
+    {
+      "startdate": "20240210",
+      "fullstartdate": "202402102300",
+      "enddate": "20240211",
+      "url": "/th?id=OHR.FolegandrosGreece_DE-DE3993128464_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp",
+      "urlbase": "/th?id=OHR.FolegandrosGreece_DE-DE3993128464",
+      "copyright": "Chora, Insel Folegandros, Kykladen, Griechenland (© Francesco Riccardo Iacomino/Getty Images)",
+      "copyrightlink": "https://www.bing.com/search?q=Folegandros+Insel+Griechenland&form=hpcapt&filters=HpDate%3a%2220240210_2300%22",
+      "title": "Paradies auf Griechisch",
+      "quiz": "/search?q=Bing+homepage+quiz&filters=WQOskey:%22HPQuiz_20240210_FolegandrosGreece%22&FORM=HPQUIZ",
+      "wp": true,
+      "hsh": "b4eaf4042675805680b0258619e4eec0",
+      "drk": 1,
+      "top": 1,
+      "bot": 1,
+      "hs": []
+    }
+  ],
+  "tooltips": {
+    "loading": "Wird geladen...",
+    "previous": "Vorheriges Bild",
+    "next": "Nächstes Bild",
+    "walle": "Dieses Bild steht nicht zum Download als Hintergrundbild zur Verfügung.",
+    "walls": "Dieses Bild herunterladen. Dieses Bild darf nur als Hintergrundbild verwendet werden."
+  }
+}

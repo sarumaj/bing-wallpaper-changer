@@ -47,7 +47,8 @@ jobs:
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
         env:
-          TEST_OAT: "true"
+          TEST_MOCK: "false"
+          HIRAGANA_API_APPLICATION_ID: ${{ secrets.HIRAGANA_API_APPLICATION_ID }}
           CC_TEST_REPORTER_ID: ${{ secrets.CODECLIMATE_REPORTER_ID }}
         with:
           coverageCommand: gocov test ./... -coverprofile=c.out
