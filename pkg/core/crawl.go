@@ -27,7 +27,7 @@ var config = struct {
 // annotateDescription annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the Goo Labs API to convert Kanji to Hiragana.
 // It should be replaced through kakasi NLP library in the future (binding similar to https://github.com/Theta-Dev/kakasi).
-func annotateDescription(description, appId string) (string, error) {
+func annotateDescription(description string) (string, error) {
 	// select kanji sequences from the description.
 	var kanji []rune
 	for _, r := range description {
@@ -43,10 +43,6 @@ func annotateDescription(description, appId string) (string, error) {
 		}
 	}
 
-	if appId == "" {
-		appId = os.Getenv("HIRAGANA_API_APPLICATION_ID")
-	}
-
 	// request hiragana conversion.
 	raw, err := readResponse(http.PostForm(
 		(&url.URL{
@@ -55,7 +51,7 @@ func annotateDescription(description, appId string) (string, error) {
 			Path:   "/api/hiragana",
 		}).String(),
 		url.Values{
-			"app_id":      {appId},
+			"app_id":      {os.Getenv("HIRAGANA_API_APPLICATION_ID")},
 			"sentence":    {string(kanji)},
 			"output_type": {"hiragana"},
 		},
@@ -83,7 +79,7 @@ func annotateDescription(description, appId string) (string, error) {
 }
 
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
-func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution, appId string) (*Image, error) {
+func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution) (*Image, error) {
 	jsonRaw, err := readResponse(http.Get(
 		(&url.URL{
 			Scheme: config.Bing.Scheme,
@@ -135,7 +131,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
 	)
 	if region == types.Japan {
-		annotated, err := annotateDescription(description, appId)
+		annotated, err := annotateDescription(description)
 		if err != nil {
 			return nil, err
 		}

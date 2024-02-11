@@ -19,7 +19,7 @@ func Test_annotateDescription(t *testing.T) {
 		{"test#1", "今日はダーウィンの日, ガラパゴスゾウガメ", "今日[きょう]はダーウィンの日[ひ], ガラパゴスゾウガメ"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := annotateDescription(tt.args, "")
+			got, err := annotateDescription(tt.args)
 			if err != nil {
 				t.Errorf("annotateDescription() error = %v, wantErr %v", err, false)
 				return
@@ -51,7 +51,7 @@ func TestDownloadAndDecode(t *testing.T) {
 		{"test#1", args{types.Today, types.Germany, types.HighDefinition}, false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution, "")
+			got, err := DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DownloadAndDecode() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -36,9 +36,6 @@ var BuildDate = "2024-02-05 15:34:38 UTC"
 // Version is the version of the binary.
 var Version = "v1.0.3"
 
-// HiraganaApiApplicationID  is the application ID used to identify the application for the Hiragana API.
-var HiraganaApiApplicationID = ""
-
 // logger is the logger used to log messages.
 var logger = log.New(os.Stderr, "bing-wall: ", 0)
 
@@ -46,7 +43,7 @@ func main() {
 	checkVersionOrUpdate()
 	parseArgs(os.Args[1:]...)
 
-	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution, HiraganaApiApplicationID)
+	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
 	if err != nil {
 		logger.Fatalln(err)
 	}

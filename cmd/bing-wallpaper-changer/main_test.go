@@ -36,7 +36,7 @@ func TestFlow(t *testing.T) {
 			err := func(t testing.TB) error {
 				t.Helper()
 
-				img, err := core.DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution, "")
+				img, err := core.DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution)
 				if err != nil {
 					return fmt.Errorf("DownloadAndDecode() failed: %w", err)
 				}
