@@ -3,6 +3,8 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.21.6
 
 require (
+	github.com/blang/semver v3.5.1+incompatible
+	github.com/creativeprojects/go-selfupdate v1.1.3
 	github.com/fogleman/gg v1.3.0
 	github.com/rawnly/go-wallpaper v1.0.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -14,8 +16,6 @@ require (
 require (
 	code.gitea.io/sdk/gitea v0.17.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/creativeprojects/go-selfupdate v1.1.3 // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -25,7 +25,6 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect

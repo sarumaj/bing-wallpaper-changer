@@ -8,7 +8,7 @@ import (
 )
 
 func TestDrawDescription(t *testing.T) {
-	img := SetupTestImage()
+	img := SetupTestImage(t)
 
 	type args struct {
 		fontName string
@@ -26,7 +26,7 @@ func TestDrawDescription(t *testing.T) {
 		{"test#4", args{"unknown", types.TopCenter}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := SetupTestImage()
+			got := SetupTestImage(t)
 
 			err := got.DrawDescription(tt.args.position, tt.args.fontName)
 			if (err != nil) != tt.wantErr {
@@ -42,7 +42,7 @@ func TestDrawDescription(t *testing.T) {
 }
 
 func TestDrawQRCode(t *testing.T) {
-	img := SetupTestImage()
+	img := SetupTestImage(t)
 
 	type args struct {
 		resolution types.Resolution
@@ -62,7 +62,7 @@ func TestDrawQRCode(t *testing.T) {
 		{"test#6", args{types.Resolution{}, types.TopLeft}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := SetupTestImage()
+			got := SetupTestImage(t)
 
 			err := got.DrawQRCode(tt.args.resolution, tt.args.position)
 			if (err != nil) != tt.wantErr {
@@ -79,7 +79,7 @@ func TestDrawQRCode(t *testing.T) {
 }
 
 func TestDrawWatermark(t *testing.T) {
-	img := SetupTestImage()
+	img := SetupTestImage(t)
 
 	type args struct {
 		watermarkFile          string
@@ -96,7 +96,7 @@ func TestDrawWatermark(t *testing.T) {
 		{"test#3", args{"unknown", false}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := SetupTestImage()
+			got := SetupTestImage(t)
 
 			err := got.DrawWatermark(tt.args.watermarkFile, tt.args.rotateCounterClockwise)
 			if (err != nil) != tt.wantErr {

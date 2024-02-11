@@ -45,7 +45,7 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 		return fmt.Errorf("error parsing font: %v", err)
 	}
 
-	face, err := opentype.NewFace(parsed, &opentype.FaceOptions{Size: 18, DPI: 72, Hinting: font.HintingNone})
+	face, err := opentype.NewFace(parsed, &opentype.FaceOptions{Size: 20, DPI: 72, Hinting: font.HintingNone})
 	if err != nil {
 		return fmt.Errorf("error creating font face: %v", err)
 	}
