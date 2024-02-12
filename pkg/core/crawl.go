@@ -11,6 +11,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/tidwall/gjson"
 )
@@ -133,9 +134,10 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	if region == types.Japan {
 		annotated, err := annotateDescription(description)
 		if err != nil {
-			return nil, err
+			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
+		} else {
+			description = annotated
 		}
-		description = annotated
 
 	}
 

@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/blang/semver"
 	"github.com/creativeprojects/go-selfupdate"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/core"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/extras"
+	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/spf13/pflag"
 )
@@ -36,48 +36,45 @@ var BuildDate = "2024-02-05 15:34:38 UTC"
 // Version is the version of the binary.
 var Version = "v1.0.3"
 
-// logger is the logger used to log messages.
-var logger = log.New(os.Stderr, "bing-wall: ", 0)
-
 func main() {
 	checkVersionOrUpdate()
 	parseArgs(os.Args[1:]...)
 
 	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
 	if err != nil {
-		logger.Fatalln(err)
+		logger.ErrLogger.Fatalln(err)
 	}
 
 	if config.Watermark != "" {
 		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
-			logger.Fatalln(err)
+			logger.ErrLogger.Fatalln(err)
 		}
 	}
 
 	if config.DrawDescription {
 		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
-			logger.Fatalln(err)
+			logger.ErrLogger.Fatalln(err)
 		}
 	}
 
 	if config.DrawQRCode {
 		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
-			logger.Fatalln(err)
+			logger.ErrLogger.Fatalln(err)
 		}
 	}
 
 	path, err := img.EncodeAndDump(config.DownloadDirectory)
 	if err != nil {
-		logger.Fatalln(err)
+		logger.ErrLogger.Fatalln(err)
 	}
 
-	logger.Printf("Wallpaper saved to: %s", path)
+	logger.ErrLogger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
 		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
-			logger.Fatalln(err)
+			logger.ErrLogger.Fatalln(err)
 		}
 
-		logger.Printf("Wallpaper set to: %s", path)
+		logger.ErrLogger.Printf("Wallpaper set to: %s", path)
 	}
 }
 
@@ -85,36 +82,36 @@ func main() {
 func checkVersionOrUpdate() {
 	parsed, err := semver.ParseTolerant(Version)
 	if err != nil {
-		logger.Printf("Failed to parse version: %s", err)
+		logger.ErrLogger.Printf("Failed to parse version: %s", err)
 		return
 	}
 
 	repository := selfupdate.ParseSlug(remoteRepository)
 	latest, found, err := selfupdate.DetectLatest(context.Background(), repository)
 	if err != nil {
-		logger.Printf("Failed to parse version: %s", err)
+		logger.ErrLogger.Printf("Failed to parse version: %s", err)
 		return
 	}
 
 	if !found {
-		logger.Printf("No update found")
+		logger.ErrLogger.Printf("No update found")
 		return
 	}
 
 	if latest.GreaterThan(parsed.String()) {
 		up, err := selfupdate.NewUpdater(selfupdate.Config{Validator: &selfupdate.SHAValidator{}})
 		if err != nil {
-			logger.Printf("Failed to create updater: %s", err)
+			logger.ErrLogger.Printf("Failed to create updater: %s", err)
 			return
 		}
 
 		if _, err := up.UpdateSelf(context.Background(), parsed.String(), repository); err != nil {
-			logger.Printf("Failed to update: %s", err)
+			logger.ErrLogger.Printf("Failed to update: %s", err)
 			return
 		}
 	}
 
-	logger.Printf("Current version %s is the latest", Version)
+	logger.ErrLogger.Printf("Current version %s is the latest", Version)
 }
 
 // parseArgs parses the command line arguments and sets the configuration accordingly.
@@ -146,7 +143,7 @@ func parseArgs(args ...string) {
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
-			logger.Println(err)
+			logger.ErrLogger.Println(err)
 		}
 		os.Exit(0)
 	}
@@ -155,18 +152,18 @@ func parseArgs(args ...string) {
 	config.Region, err = types.ParseLocale(region)
 	if err != nil {
 		opts.Usage()
-		logger.Fatalln(err)
+		logger.ErrLogger.Fatalln(err)
 	}
 
 	config.Day = types.Day(day)
 	if err := config.Day.IsValid(); err != nil {
 		opts.Usage()
-		logger.Fatalln(err)
+		logger.ErrLogger.Fatalln(err)
 	}
 
 	config.Resolution, err = types.ParseResolution(resolution)
 	if err != nil {
 		opts.Usage()
-		logger.Fatalln(err)
+		logger.ErrLogger.Fatalln(err)
 	}
 }
