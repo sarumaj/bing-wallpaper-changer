@@ -31,10 +31,10 @@ var config struct {
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-02-05 15:34:38 UTC"
+var BuildDate = "2024-02-20 08:09:08 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.3"
+var Version = "v1.0.8"
 
 func main() {
 	checkVersionOrUpdate()
@@ -86,10 +86,22 @@ func checkVersionOrUpdate() {
 		return
 	}
 
-	repository := selfupdate.ParseSlug(remoteRepository)
-	latest, found, err := selfupdate.DetectLatest(context.Background(), repository)
+	source, err := selfupdate.NewGitHubSource(selfupdate.GitHubConfig{APIToken: ""})
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to parse version: %s", err)
+		logger.ErrLogger.Printf("Failed to setup source: %s", err)
+		return
+	}
+
+	updater, err := selfupdate.NewUpdater(selfupdate.Config{Source: source, Validator: &selfupdate.SHAValidator{}})
+	if err != nil {
+		logger.ErrLogger.Printf("Failed to setup updater: %s", err)
+		return
+	}
+
+	repository := selfupdate.ParseSlug(remoteRepository)
+	latest, found, err := updater.DetectLatest(context.Background(), repository)
+	if err != nil {
+		logger.ErrLogger.Printf("Failed to detect latest version: %s", err)
 		return
 	}
 
@@ -99,13 +111,7 @@ func checkVersionOrUpdate() {
 	}
 
 	if latest.GreaterThan(parsed.String()) {
-		up, err := selfupdate.NewUpdater(selfupdate.Config{Validator: &selfupdate.SHAValidator{}})
-		if err != nil {
-			logger.ErrLogger.Printf("Failed to create updater: %s", err)
-			return
-		}
-
-		if _, err := up.UpdateSelf(context.Background(), parsed.String(), repository); err != nil {
+		if _, err := updater.UpdateSelf(context.Background(), parsed.String(), repository); err != nil {
 			logger.ErrLogger.Printf("Failed to update: %s", err)
 			return
 		}

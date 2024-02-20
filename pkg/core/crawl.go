@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 	"unicode"
@@ -16,11 +15,13 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// bindURL is the URL to fetch the Bing wallpaper.
+// config contains the configuration for the Bing and Goo Labs APIs.
 var config = struct {
+	AppID       string
 	Bing        url.URL
 	HiraganaAPI url.URL
 }{
+	AppID:       "d175fb007ba9ef9931b665291ad75192c62b667360cd6d9ed8e0ef524a2aa442",
 	Bing:        url.URL{Scheme: "https", Host: "www.bing.com"},
 	HiraganaAPI: url.URL{Scheme: "https", Host: "labs.goo.ne.jp"},
 }
@@ -52,7 +53,7 @@ func annotateDescription(description string) (string, error) {
 			Path:   "/api/hiragana",
 		}).String(),
 		url.Values{
-			"app_id":      {os.Getenv("HIRAGANA_API_APPLICATION_ID")},
+			"app_id":      {config.AppID},
 			"sentence":    {string(kanji)},
 			"output_type": {"hiragana"},
 		},
