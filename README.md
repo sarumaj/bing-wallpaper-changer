@@ -41,7 +41,7 @@ $ bing-wallpaper-changer -h
 > Usage: bing-wallpaper-changer [flags]
 >       --day int                     the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago
 >       --description                 draw the description on the wallpaper (default true)
->       --download-directory string   the directory to download the wallpaper to (default "/home/dawid/Pictures/BingWallpapers")
+>       --download-directory string   the directory to download the wallpaper to (default "~/Pictures/BingWallpapers")
 >       --download-only               download the wallpaper only
 >       --qrcode                      draw the QR code on the wallpaper (default true)
 >       --region string               the region to fetch the wallpaper for, allowed values are: en-CA, zh-CN, de-DE, ja-JP, en-NZ, en-GB, en-US (default "de-DE")
