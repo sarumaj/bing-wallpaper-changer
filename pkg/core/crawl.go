@@ -12,6 +12,7 @@ import (
 
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
+	"github.com/sarumaj/go-kakasi"
 	"github.com/tidwall/gjson"
 )
 
@@ -29,6 +30,7 @@ var config = struct {
 // annotateDescription annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the Goo Labs API to convert Kanji to Hiragana.
 // It should be replaced through kakasi NLP library in the future (binding similar to https://github.com/Theta-Dev/kakasi).
+// Deprecated: Use annotateDescriptionV2 instead.
 func annotateDescription(description string) (string, error) {
 	// select kanji sequences from the description.
 	var kanji []rune
@@ -78,6 +80,22 @@ func annotateDescription(description string) (string, error) {
 
 	// replace the kanji sequences with the hiragana sequences avoiding collisions.
 	return strings.NewReplacer(replacements...).Replace(description), nil
+}
+
+// annotateDescriptionV2 annotates the description in Japanese with Furigana for Kanji sequences.
+// It uses the kakasi NLP library to convert Kanji to Hiragana.
+func annotateDescriptionV2(description string) (string, error) {
+	k, err := kakasi.NewKakasi()
+	if err != nil {
+		return "", err
+	}
+
+	converted, err := k.Convert(description)
+	if err != nil {
+		return "", err
+	}
+
+	return converted.Furiganize(), nil
 }
 
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
@@ -133,7 +151,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
 	)
 	if region == types.Japan {
-		annotated, err := annotateDescription(description)
+		annotated, err := annotateDescriptionV2(description)
 		if err != nil {
 			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
 		} else {
