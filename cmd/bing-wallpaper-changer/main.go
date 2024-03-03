@@ -31,10 +31,10 @@ var config struct {
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-02-20 08:09:08 UTC"
+var BuildDate = "2024-03-03 17:00:14 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.8"
+var Version = "v1.0.10"
 
 func main() {
 	checkVersionOrUpdate()

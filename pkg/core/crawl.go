@@ -95,7 +95,7 @@ func annotateDescriptionV2(description string) (string, error) {
 		return "", err
 	}
 
-	return converted.Furiganize(), nil
+	return k.Normalize(converted.Furiganize())
 }
 
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
