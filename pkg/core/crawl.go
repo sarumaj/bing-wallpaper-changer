@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"unicode"
@@ -42,9 +43,9 @@ var cfg = config{
 	furiganaApiUrl: defaultFuriganaApiUrl,
 }
 
-// annotateDescription annotates the description in Japanese with Furigana for Kanji sequences.
+// furiganizeGooLabsApi annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the Goo Labs API to convert Kanji to Furigana.
-func annotateDescription(description string) (string, error) {
+func furiganizeGooLabsApi(description string) (string, error) {
 	// select kanji sequences from the description.
 	var kanji []rune
 	for _, r := range description {
@@ -91,9 +92,9 @@ func annotateDescription(description string) (string, error) {
 	return strings.NewReplacer(replacements...).Replace(description), nil
 }
 
-// annotateDescriptionV2 annotates the description in Japanese with Furigana for Kanji sequences.
+// furiganizeKakasi annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the kakasi NLP library to convert Kanji to Furigana.
-func annotateDescriptionV2(description string) (string, error) {
+func furiganizeKakasi(description string) (string, error) {
 	k, err := kakasi.NewKakasi()
 	if err != nil {
 		return "", err
@@ -125,18 +126,27 @@ func readResponse(resp *http.Response, err error) ([]byte, error) {
 // It uses the Google Cloud Translation Service to translate the description.
 func translateDescription(description string, source, target string) (string, error) {
 	ctx := context.Background()
-	client, err := translate.NewTranslationClient(ctx, option.WithCredentialsFile(cfg.googleAppCredentials))
+	contents, err := os.ReadFile(cfg.googleAppCredentials)
+	if err != nil {
+		return "", err
+	}
+
+	client, err := translate.NewTranslationClient(ctx, option.WithCredentialsJSON(contents))
 	if err != nil {
 		return "", err
 	}
 	defer client.Close()
+
+	location := fmt.Sprintf("projects/%s/locations/global", gjson.GetBytes(contents, "project_id").String())
+	logger.InfoLogger.Println("Using Google Translation service location:", location)
 
 	result, err := client.TranslateText(ctx, &translatepb.TranslateTextRequest{
 		Contents:           []string{description},
 		MimeType:           "text/plain",
 		SourceLanguageCode: source,
 		TargetLanguageCode: target,
-		Parent:             fmt.Sprintf("projects/%s/locations/global", "bing-wallpaper-changer"),
+		Parent:             location,
+		Labels:             map[string]string{"requestor": "bing-wallpaper-changer"},
 	})
 	if err != nil {
 		return "", err
@@ -200,16 +210,13 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		return nil, fmt.Errorf("expected resolution: %s, got: %s", resolution, imgBounds.Size())
 	}
 
-	description := fmt.Sprintf(
-		"%s, %s",
-		gjson.GetBytes(jsonRaw, "images.0.title").String(),
-		gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
-	)
+	title := gjson.GetBytes(jsonRaw, "images.0.title").String()
+	copyright := gjson.GetBytes(jsonRaw, "images.0.copyright").String()
 
 	var translated string
 	if region.IsAny(types.NonEnglishRegions...) && cfg.googleAppCredentials != "" {
 		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.UnitedStates.String())
-		translated, err = translateDescription(description, region.String(), types.UnitedStates.String())
+		translated, err = translateDescription(title, region.String(), types.UnitedStates.String())
 		if err != nil {
 			logger.ErrLogger.Printf("failed to translate description: %v\n", err)
 		}
@@ -219,26 +226,28 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		var fn func(string) (string, error)
 		if cfg.furiganaApiAppId != "" {
 			logger.InfoLogger.Println("using Goo Labs API for Furigana conversion")
-			fn = annotateDescription
+			fn = furiganizeGooLabsApi
 		} else {
 			logger.InfoLogger.Println("using go-kakasi for Furigana conversion")
-			fn = annotateDescriptionV2
+			fn = furiganizeKakasi
 		}
 
-		annotated, err := fn(description)
+		annotated, err := fn(title + "¶" + copyright)
 		if err != nil {
 			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
 		} else {
-			description = annotated
+			title, copyright, _ = strings.Cut(annotated, "¶")
 		}
 	}
 
+	lines := []string{title}
 	if translated != "" {
-		description += "\n" + translated
+		lines = append(lines, "("+translated+")")
 	}
+	lines = append(lines, copyright)
 
 	return &Image{
-		Description: description,
+		Description: strings.Join(lines, "\n"),
 		Image:       img,
 		DownloadURL: parsedRequestUri.String(),
 		SearchURL:   gjson.GetBytes(jsonRaw, "images.0.copyrightlink").String(),

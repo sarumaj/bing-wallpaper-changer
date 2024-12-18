@@ -6,7 +6,7 @@ import (
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 )
 
-func Test_annotateDescription(t *testing.T) {
+func Test_furiganizeGooLabsApi(t *testing.T) {
 	if FromMock(t) {
 		MockServers(t)
 	}
@@ -19,14 +19,14 @@ func Test_annotateDescription(t *testing.T) {
 		{"test#1", "今日はダーウィンの日, ガラパゴスゾウガメ", "今日[きょう]はダーウィンの日[ひ], ガラパゴスゾウガメ"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := annotateDescription(tt.args)
+			got, err := furiganizeGooLabsApi(tt.args)
 			if err != nil {
-				t.Errorf("annotateDescription() error = %v, wantErr %v", err, false)
+				t.Errorf("furiganizeGooLabsApi() error = %v, wantErr %v", err, false)
 				return
 			}
 
 			if got != tt.want {
-				t.Errorf("annotateDescription() = %v, want %v", got, tt.want)
+				t.Errorf("furiganizeGooLabsApi() = %v, want %v", got, tt.want)
 			}
 		})
 	}

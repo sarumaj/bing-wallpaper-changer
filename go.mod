@@ -1,8 +1,6 @@
 module github.com/sarumaj/bing-wallpaper-changer
 
-go 1.22.7
-
-toolchain go1.23.4
+go 1.23.4
 
 require (
 	cloud.google.com/go/translate v1.12.2
