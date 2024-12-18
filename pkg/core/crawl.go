@@ -212,11 +212,12 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 
 	title := gjson.GetBytes(jsonRaw, "images.0.title").String()
 	copyright := gjson.GetBytes(jsonRaw, "images.0.copyright").String()
+	description := title + ", " + copyright
 
 	var translated string
 	if region.IsAny(types.NonEnglishRegions...) && cfg.googleAppCredentials != "" {
 		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.UnitedStates.String())
-		translated, err = translateDescription(title, region.String(), types.UnitedStates.String())
+		translated, err = translateDescription(description, region.String(), types.UnitedStates.String())
 		if err != nil {
 			logger.ErrLogger.Printf("failed to translate description: %v\n", err)
 		}
@@ -225,26 +226,25 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	if region == types.Japan {
 		var fn func(string) (string, error)
 		if cfg.furiganaApiAppId != "" {
-			logger.InfoLogger.Println("using Goo Labs API for Furigana conversion")
+			logger.InfoLogger.Println("Using Goo Labs API for Furigana conversion")
 			fn = furiganizeGooLabsApi
 		} else {
-			logger.InfoLogger.Println("using go-kakasi for Furigana conversion")
+			logger.InfoLogger.Println("Using go-kakasi for Furigana conversion")
 			fn = furiganizeKakasi
 		}
 
-		annotated, err := fn(title + "¶" + copyright)
+		annotated, err := fn(description)
 		if err != nil {
 			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
 		} else {
-			title, copyright, _ = strings.Cut(annotated, "¶")
+			description = annotated
 		}
 	}
 
-	lines := []string{title}
+	lines := []string{description}
 	if translated != "" {
-		lines = append(lines, "("+translated+")")
+		lines = append(lines, translated)
 	}
-	lines = append(lines, copyright)
 
 	return &Image{
 		Description: strings.Join(lines, "\n"),
