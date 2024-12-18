@@ -28,6 +28,7 @@ Done just for fun 😄
   - [x] Support multiple screen resolutions (😡 UltraHD is broken on the Bing side)
   - [x] Download wallpapers up to seven days in the past
 - [x] Draw title on wallpapers
+  - [x] Support google Cloud Translation Service for translation to English
 - [x] Place QR code for the copyright links
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper

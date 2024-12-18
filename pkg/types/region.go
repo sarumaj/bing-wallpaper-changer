@@ -16,9 +16,22 @@ const (
 )
 
 var AllowedRegions = Regions{Canada, China, Germany, Japan, NewZealand, UnitedKingdom, UnitedStates}
+var EnglishRegions = Regions{Canada, NewZealand, UnitedKingdom, UnitedStates}
+var NonEnglishRegions = Regions{China, Germany, Japan}
 
 // Region is an enum type for locales.
 type Region int
+
+// IsAny returns true if the Region is any of the provided Regions.
+func (r Region) IsAny(o ...Region) bool {
+	for _, v := range o {
+		if r == v {
+			return true
+		}
+	}
+
+	return false
+}
 
 // String returns the code representation of the Region.
 func (r Region) String() string {

@@ -73,31 +73,24 @@ func MockServers(t testing.TB) {
 
 	bingServer := httptest.NewServer(bingServerMux)
 
-	parsed, err := url.Parse(bingServer.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
+	oldBing := cfg.bingUrl
+	cfg.bingUrl = bingServer.URL
 
-	oldBing := config.Bing
-	config.Bing = url.URL{Host: parsed.Host, Scheme: parsed.Scheme}
+	furiganaApiServerMux := http.NewServeMux()
+	furiganaApiServerMux.Handle("/api/hiragana", getHandler(t, "hiragana.json"))
+	furiganaApiServer := httptest.NewServer(furiganaApiServerMux)
 
-	hiraganaApiServerMux := http.NewServeMux()
-	hiraganaApiServerMux.Handle("/api/hiragana", getHandler(t, "hiragana.json"))
-	hiraganaApiServer := httptest.NewServer(hiraganaApiServerMux)
-
-	parsed, err = url.Parse(hiraganaApiServer.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	oldHiraganaApi := config.HiraganaAPI
-	config.HiraganaAPI = url.URL{Host: parsed.Host, Scheme: parsed.Scheme}
+	oldHiraganaApi := cfg.furiganaApiUrl
+	oldHiraganaApiAppId := cfg.furiganaApiAppId
+	cfg.furiganaApiUrl = furiganaApiServer.URL
+	cfg.furiganaApiAppId = "test"
 
 	t.Cleanup(func() {
 		bingServer.Close()
-		hiraganaApiServer.Close()
-		config.Bing = oldBing
-		config.HiraganaAPI = oldHiraganaApi
+		furiganaApiServer.Close()
+		cfg.bingUrl = oldBing
+		cfg.furiganaApiUrl = oldHiraganaApi
+		cfg.furiganaApiAppId = oldHiraganaApiAppId
 	})
 }
 
@@ -132,13 +125,18 @@ func SetupTestImage(t testing.TB) *Image {
 		t.Fatal(err)
 	}
 
-	parsed, err := url.ParseRequestURI(gjson.GetBytes(jsonRaw, "images.0.url").String())
+	parsedRequestUri, err := url.ParseRequestURI(gjson.GetBytes(jsonRaw, "images.0.url").String())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	parsed.Scheme = config.Bing.Scheme
-	parsed.Host = config.Bing.Host
+	remoteHostUrl, err := url.Parse(cfg.bingUrl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	parsedRequestUri.Host = remoteHostUrl.Host
+	parsedRequestUri.Scheme = remoteHostUrl.Scheme
 
 	return &Image{
 		Description: fmt.Sprintf(
@@ -146,7 +144,7 @@ func SetupTestImage(t testing.TB) *Image {
 			gjson.GetBytes(jsonRaw, "images.0.title").String(),
 			gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
 		),
-		DownloadURL: parsed.String(),
+		DownloadURL: parsedRequestUri.String(),
 		SearchURL:   gjson.GetBytes(jsonRaw, "images.0.copyrightlink").String(),
 		Image:       img,
 	}

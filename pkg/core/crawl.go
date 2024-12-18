@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,27 +11,39 @@ import (
 	"strings"
 	"unicode"
 
+	translate "cloud.google.com/go/translate/apiv3"
+	"cloud.google.com/go/translate/apiv3/translatepb"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/sarumaj/go-kakasi"
 	"github.com/tidwall/gjson"
+	"google.golang.org/api/option"
 )
 
-// config contains the configuration for the Bing and Goo Labs APIs.
-var config = struct {
-	AppID       string
-	Bing        url.URL
-	HiraganaAPI url.URL
-}{
-	AppID:       "d175fb007ba9ef9931b665291ad75192c62b667360cd6d9ed8e0ef524a2aa442",
-	Bing:        url.URL{Scheme: "https", Host: "www.bing.com"},
-	HiraganaAPI: url.URL{Scheme: "https", Host: "labs.goo.ne.jp"},
+const (
+	defaultBingUrl        = "https://www.bing.com"
+	defaultFuriganaApiUrl = "https://labs.goo.ne.jp"
+)
+
+type (
+	config struct {
+		bingUrl              string
+		googleAppCredentials string
+		furiganaApiAppId     string
+		furiganaApiUrl       string
+	}
+
+	configOption func(*config)
+)
+
+// configuration for the Bing, Goo Labs APIs and Google Cloud Translation Service.
+var cfg = config{
+	bingUrl:        defaultBingUrl,
+	furiganaApiUrl: defaultFuriganaApiUrl,
 }
 
 // annotateDescription annotates the description in Japanese with Furigana for Kanji sequences.
-// It uses the Goo Labs API to convert Kanji to Hiragana.
-// It should be replaced through kakasi NLP library in the future (binding similar to https://github.com/Theta-Dev/kakasi).
-// Deprecated: Use annotateDescriptionV2 instead.
+// It uses the Goo Labs API to convert Kanji to Furigana.
 func annotateDescription(description string) (string, error) {
 	// select kanji sequences from the description.
 	var kanji []rune
@@ -47,15 +60,11 @@ func annotateDescription(description string) (string, error) {
 		}
 	}
 
-	// request hiragana conversion.
+	// request furigana conversion.
 	raw, err := readResponse(http.PostForm(
-		(&url.URL{
-			Scheme: config.HiraganaAPI.Scheme,
-			Host:   config.HiraganaAPI.Host,
-			Path:   "/api/hiragana",
-		}).String(),
+		cfg.furiganaApiUrl+"/api/hiragana",
 		url.Values{
-			"app_id":      {config.AppID},
+			"app_id":      {cfg.furiganaApiAppId},
 			"sentence":    {string(kanji)},
 			"output_type": {"hiragana"},
 		},
@@ -83,7 +92,7 @@ func annotateDescription(description string) (string, error) {
 }
 
 // annotateDescriptionV2 annotates the description in Japanese with Furigana for Kanji sequences.
-// It uses the kakasi NLP library to convert Kanji to Hiragana.
+// It uses the kakasi NLP library to convert Kanji to Furigana.
 func annotateDescriptionV2(description string) (string, error) {
 	k, err := kakasi.NewKakasi()
 	if err != nil {
@@ -98,20 +107,61 @@ func annotateDescriptionV2(description string) (string, error) {
 	return k.Normalize(converted.Furiganize())
 }
 
+// readResponse reads the response body and returns the content.
+func readResponse(resp *http.Response, err error) ([]byte, error) {
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// translateDescription translates the description from the source language to the target language.
+// It uses the Google Cloud Translation Service to translate the description.
+func translateDescription(description string, source, target string) (string, error) {
+	ctx := context.Background()
+	client, err := translate.NewTranslationClient(ctx, option.WithCredentialsFile(cfg.googleAppCredentials))
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	result, err := client.TranslateText(ctx, &translatepb.TranslateTextRequest{
+		Contents:           []string{description},
+		MimeType:           "text/plain",
+		SourceLanguageCode: source,
+		TargetLanguageCode: target,
+		Parent:             fmt.Sprintf("projects/%s/locations/global", "bing-wallpaper-changer"),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if len(result.Translations) == 0 {
+		return "", fmt.Errorf("no translations found")
+	}
+
+	return result.Translations[0].TranslatedText, nil
+}
+
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
-func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution) (*Image, error) {
+func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution, opts ...configOption) (*Image, error) {
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
 	jsonRaw, err := readResponse(http.Get(
-		(&url.URL{
-			Scheme: config.Bing.Scheme,
-			Host:   config.Bing.Host,
-			Path:   "/HPImageArchive.aspx",
-			RawQuery: url.Values{
-				"format": {"js"},
-				"idx":    {fmt.Sprintf("%d", day)},
-				"n":      {"1"},
-				"mkt":    {region.String()},
-			}.Encode(),
-		}).String(),
+		cfg.bingUrl + "/HPImageArchive.aspx?" + url.Values{
+			"format": {"js"},
+			"idx":    {fmt.Sprintf("%d", day)},
+			"n":      {"1"},
+			"mkt":    {region.String()},
+		}.Encode(),
 	))
 	if err != nil {
 		return nil, err
@@ -120,20 +170,25 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	path := gjson.GetBytes(jsonRaw, "images.0.url").String()
 	path = regexp.MustCompile(`_\d+x\d+`).ReplaceAllString(path, "_"+resolution.String())
 
-	parsed, err := url.ParseRequestURI(path)
+	parsedRequestUri, err := url.ParseRequestURI(path)
 	if err != nil {
 		return nil, err
 	}
 
-	parsed.Scheme = config.Bing.Scheme
-	parsed.Host = config.Bing.Host
-
-	decoder, err := getDecoder(parsed.Query().Get("id"))
+	remoteHostUrl, err := url.Parse(cfg.bingUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	content, err := readResponse(http.Get(parsed.String()))
+	parsedRequestUri.Host = remoteHostUrl.Host
+	parsedRequestUri.Scheme = remoteHostUrl.Scheme
+
+	decoder, err := getDecoder(parsedRequestUri.Query().Get("id"))
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := readResponse(http.Get(parsedRequestUri.String()))
 	if err != nil {
 		return nil, err
 	}
@@ -150,34 +205,54 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		gjson.GetBytes(jsonRaw, "images.0.title").String(),
 		gjson.GetBytes(jsonRaw, "images.0.copyright").String(),
 	)
+
+	var translated string
+	if region.IsAny(types.NonEnglishRegions...) && cfg.googleAppCredentials != "" {
+		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.UnitedStates.String())
+		translated, err = translateDescription(description, region.String(), types.UnitedStates.String())
+		if err != nil {
+			logger.ErrLogger.Printf("failed to translate description: %v\n", err)
+		}
+	}
+
 	if region == types.Japan {
-		annotated, err := annotateDescriptionV2(description)
+		var fn func(string) (string, error)
+		if cfg.furiganaApiAppId != "" {
+			logger.InfoLogger.Println("using Goo Labs API for Furigana conversion")
+			fn = annotateDescription
+		} else {
+			logger.InfoLogger.Println("using go-kakasi for Furigana conversion")
+			fn = annotateDescriptionV2
+		}
+
+		annotated, err := fn(description)
 		if err != nil {
 			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
 		} else {
 			description = annotated
 		}
+	}
 
+	if translated != "" {
+		description += "\n" + translated
 	}
 
 	return &Image{
 		Description: description,
 		Image:       img,
-		DownloadURL: parsed.String(),
+		DownloadURL: parsedRequestUri.String(),
 		SearchURL:   gjson.GetBytes(jsonRaw, "images.0.copyrightlink").String(),
 	}, err
 }
 
-// readResponse reads the response body and returns the content.
-func readResponse(resp *http.Response, err error) ([]byte, error) {
-	if err != nil {
-		return nil, err
+func WithGoogleAppCredentials(credentials string) configOption {
+	return func(cfg *config) {
+		cfg.googleAppCredentials = credentials
 	}
-	defer resp.Body.Close()
+}
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+func WithFuriganaApiAppId(appId string) configOption {
+	return func(cfg *config) {
+		cfg.furiganaApiAppId = appId
 	}
-
-	return io.ReadAll(resp.Body)
 }

@@ -25,22 +25,28 @@ var config struct {
 	DownloadOnly           bool
 	DownloadDirectory      string
 	RotateCounterClockwise bool
+	GoogleAppCredentials   string
+	FuriganaApiAppId       string
 }
 
 // name of remote code repository mirror
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-03-03 17:00:14 UTC"
+var BuildDate = "2024-12-18 20:55:35 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.10"
+var Version = "v1.0.11"
 
 func main() {
 	checkVersionOrUpdate()
 	parseArgs(os.Args[1:]...)
 
-	img, err := core.DownloadAndDecode(config.Day, config.Region, config.Resolution)
+	img, err := core.DownloadAndDecode(
+		config.Day, config.Region, config.Resolution,
+		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
+		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
+	)
 	if err != nil {
 		logger.ErrLogger.Fatalln(err)
 	}
@@ -68,13 +74,13 @@ func main() {
 		logger.ErrLogger.Fatalln(err)
 	}
 
-	logger.ErrLogger.Printf("Wallpaper saved to: %s", path)
+	logger.InfoLogger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
 		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
 			logger.ErrLogger.Fatalln(err)
 		}
 
-		logger.ErrLogger.Printf("Wallpaper set to: %s", path)
+		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
 	}
 }
 
@@ -117,7 +123,7 @@ func checkVersionOrUpdate() {
 		}
 	}
 
-	logger.ErrLogger.Printf("Current version %s is the latest", Version)
+	logger.InfoLogger.Printf("Current version %s is the latest", Version)
 }
 
 // parseArgs parses the command line arguments and sets the configuration accordingly.
@@ -146,6 +152,8 @@ func parseArgs(args ...string) {
 	opts.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
 	opts.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
 	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
+	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.UnitedStates))
+	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
