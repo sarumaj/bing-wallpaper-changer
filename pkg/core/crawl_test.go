@@ -11,6 +11,10 @@ func Test_furiganizeGooLabsApi(t *testing.T) {
 		MockServers(t)
 	}
 
+	if cfg.furiganaApiAppId == "" {
+		t.Skip("no Goo Labs API AppId provided")
+	}
+
 	for _, tt := range []struct {
 		name string
 		args string
