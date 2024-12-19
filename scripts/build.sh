@@ -4,11 +4,8 @@ set -e
 supported_platforms=(
     darwin-amd64
     darwin-arm64
-    linux-386
     linux-amd64
-    linux-arm
     linux-arm64
-    windows-386
     windows-amd64
     windows-arm64
 )
