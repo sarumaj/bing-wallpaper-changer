@@ -39,17 +39,24 @@ Done just for fun 😄
 ```console
 $ bing-wallpaper-changer -h
 >
-> Usage: bing-wallpaper-changer [flags]
->       --day int                     the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago
->       --description                 draw the description on the wallpaper (default true)
->       --download-directory string   the directory to download the wallpaper to (default "~/Pictures/BingWallpapers")
->       --download-only               download the wallpaper only
->       --qrcode                      draw the QR code on the wallpaper (default true)
->       --region string               the region to fetch the wallpaper for, allowed values are: en-CA, zh-CN, de-DE, ja-JP, en-NZ, en-GB, en-US (default "de-DE")
->       --resolution string           the resolution of the wallpaper, allowed values are: 1366x768, 1920x1080, 3840x2160 (default "1920x1080")
->       --rotate-counter-clockwise    rotate the watermark counter-clockwise if necessary (default is clockwise)
->       --watermark string            draw the watermark on the wallpaper (default "sarumaj.png")
-
+>Usage of bing-wallpaper-changer:
+>
+>Flags:
+>
+>      --day int                          the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago
+>      --description                      draw the description on the wallpaper (default true)
+>      --download-directory string        the directory to download the wallpaper to (default "~/Pictures/BingWallpapers")
+>      --download-only                    download the wallpaper only
+>      --furigana-api-app-id string       the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used
+>      --google-app-credentials string    the path to the Google App credentials file for the translation service for zh-CN, de-DE, ja-JP to en-US,
+>                                         if not provided, the translation service will not be used
+>      --qrcode                           draw the QR code on the wallpaper (default true)
+>      --region string                    the region to fetch the wallpaper for, allowed values are: en-CA, zh-CN, de-DE, ja-JP, en-NZ, en-GB, en-US (default "de-DE")
+>      --resolution string                the resolution of the wallpaper, allowed values are: 1366x768, 1920x1080, 3840x2160 (default "1920x1080")
+>      --rotate-counter-clockwise         rotate the watermark counter-clockwise if necessary (default is clockwise)
+>      --use-google-text2speech-service   use the Google Text2Speech service to record and play the audio description
+>      --watermark string                 draw the watermark on the wallpaper (default "sarumaj.png")
+>
 ```
 
 ## Examples

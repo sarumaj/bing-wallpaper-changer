@@ -16,27 +16,28 @@ import (
 )
 
 var config struct {
-	Day                    types.Day
-	Region                 types.Region
-	Resolution             types.Resolution
-	DrawDescription        bool
-	DrawQRCode             bool
-	Watermark              string
-	DownloadOnly           bool
-	DownloadDirectory      string
-	RotateCounterClockwise bool
-	GoogleAppCredentials   string
-	FuriganaApiAppId       string
+	Day                         types.Day
+	Region                      types.Region
+	Resolution                  types.Resolution
+	DrawDescription             bool
+	DrawQRCode                  bool
+	Watermark                   string
+	DownloadOnly                bool
+	DownloadDirectory           string
+	RotateCounterClockwise      bool
+	GoogleAppCredentials        string
+	FuriganaApiAppId            string
+	UseGoogleText2SpeechService bool
 }
 
 // name of remote code repository mirror
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-12-18 22:32:11 UTC"
+var BuildDate = "2024-12-19 09:34:58 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.12"
+var Version = "v1.0.13"
 
 func main() {
 	checkVersionOrUpdate()
@@ -46,6 +47,7 @@ func main() {
 		config.Day, config.Region, config.Resolution,
 		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
 		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
+		core.WithUseGoogleText2SpeechService(config.UseGoogleText2SpeechService),
 	)
 	if err != nil {
 		logger.ErrLogger.Fatalln(err)
@@ -81,6 +83,12 @@ func main() {
 		}
 
 		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
+	}
+
+	logger.InfoLogger.Println("Playing audio description")
+	if err := img.Audio.Play(); err != nil {
+		logger.ErrLogger.Printf("Failed to play audio: %v", err)
+
 	}
 }
 
@@ -121,6 +129,9 @@ func checkVersionOrUpdate() {
 			logger.ErrLogger.Printf("Failed to update: %s", err)
 			return
 		}
+
+		logger.InfoLogger.Printf("Updated to version %s", latest.Version())
+		return
 	}
 
 	logger.InfoLogger.Printf("Current version %s is the latest", Version)
@@ -154,6 +165,7 @@ func parseArgs(args ...string) {
 	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
 	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.UnitedStates))
 	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
+	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {

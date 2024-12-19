@@ -3,10 +3,13 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.23.4
 
 require (
+	cloud.google.com/go/texttospeech v1.10.0
 	cloud.google.com/go/translate v1.12.2
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/creativeprojects/go-selfupdate v1.4.0
 	github.com/fogleman/gg v1.3.0
+	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/hajimehoshi/oto v1.0.1
 	github.com/rawnly/go-wallpaper v1.0.2
 	github.com/sarumaj/go-kakasi v1.0.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -55,6 +58,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/exp/shiny v0.0.0-20241217172543-b2144cdd0a67 // indirect
+	golang.org/x/mobile v0.0.0-20241213221354-a87c1cf6cf46 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect

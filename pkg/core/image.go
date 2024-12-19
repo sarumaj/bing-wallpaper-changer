@@ -17,6 +17,7 @@ import (
 // Image is a wrapper around the image.Image interface.
 type Image struct {
 	image.Image
+	Audio       *Audio
 	Description string
 	SearchURL   string
 	DownloadURL string
@@ -44,6 +45,7 @@ func (i *Image) Equals(other *Image) bool {
 }
 
 // EncodeAndDump encodes the image and dumps it to the target directory.
+// If audio description is available, it will be dumped as well.
 func (img *Image) EncodeAndDump(targetDir string) (string, error) {
 	parsed, err := url.Parse(img.DownloadURL)
 	if err != nil {
@@ -64,6 +66,13 @@ func (img *Image) EncodeAndDump(targetDir string) (string, error) {
 	}
 
 	defer target.Close()
+
+	if img.Audio != nil {
+		audioPath := strings.TrimSuffix(filePath, filepath.Ext(filePath)) + "." + strings.ToLower(img.Audio.Encoding)
+		if err := img.Audio.Dump(audioPath); err != nil {
+			return "", err
+		}
+	}
 
 	return target.Name(), png.Encode(target, img)
 }

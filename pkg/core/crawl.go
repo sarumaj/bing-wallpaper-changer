@@ -12,6 +12,8 @@ import (
 	"strings"
 	"unicode"
 
+	texttospeech "cloud.google.com/go/texttospeech/apiv1"
+	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	translate "cloud.google.com/go/translate/apiv3"
 	"cloud.google.com/go/translate/apiv3/translatepb"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
@@ -28,10 +30,11 @@ const (
 
 type (
 	config struct {
-		bingUrl              string
-		googleAppCredentials string
-		furiganaApiAppId     string
-		furiganaApiUrl       string
+		bingUrl                     string
+		googleAppCredentials        string
+		furiganaApiAppId            string
+		furiganaApiUrl              string
+		useGoogleText2SpeechService bool
 	}
 
 	configOption func(*config)
@@ -122,15 +125,77 @@ func readResponse(resp *http.Response, err error) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+// speakDescription generates an audio stream reader using Google Cloud Text-to-Speech Service.
+func speakDescription(description string, languageCode string) (*Audio, error) {
+	contents, err := os.ReadFile(cfg.googleAppCredentials)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := context.Background()
+	client, err := texttospeech.NewClient(ctx, option.WithCredentialsJSON(contents))
+	if err != nil {
+		return nil, err
+	}
+
+	defer client.Close()
+
+	voices_result, err := client.ListVoices(ctx, &texttospeechpb.ListVoicesRequest{LanguageCode: languageCode})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(voices_result.Voices) == 0 {
+		return nil, fmt.Errorf("no voices found")
+	}
+
+	var voice *texttospeechpb.Voice
+	for _, v := range voices_result.Voices {
+		if v.SsmlGender == texttospeechpb.SsmlVoiceGender_FEMALE {
+			voice = v
+			break
+		}
+
+	}
+
+	if voice == nil {
+		voice = voices_result.Voices[0]
+	}
+
+	result, err := client.SynthesizeSpeech(ctx, &texttospeechpb.SynthesizeSpeechRequest{
+		Input: &texttospeechpb.SynthesisInput{
+			InputSource: &texttospeechpb.SynthesisInput_Text{Text: description},
+		},
+		Voice: &texttospeechpb.VoiceSelectionParams{
+			LanguageCode: languageCode,
+			SsmlGender:   voice.SsmlGender,
+			Name:         voice.Name,
+		},
+		AudioConfig: &texttospeechpb.AudioConfig{
+			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
+			VolumeGainDb:  6.0,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Audio{
+		Encoding:   texttospeechpb.AudioEncoding_MP3.String(),
+		Source:     bytes.NewReader(result.AudioContent),
+		SampleRate: int(voice.NaturalSampleRateHertz),
+	}, nil
+}
+
 // translateDescription translates the description from the source language to the target language.
 // It uses the Google Cloud Translation Service to translate the description.
 func translateDescription(description string, source, target string) (string, error) {
-	ctx := context.Background()
 	contents, err := os.ReadFile(cfg.googleAppCredentials)
 	if err != nil {
 		return "", err
 	}
 
+	ctx := context.Background()
 	client, err := translate.NewTranslationClient(ctx, option.WithCredentialsJSON(contents))
 	if err != nil {
 		return "", err
@@ -246,7 +311,17 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		lines = append(lines, translated)
 	}
 
+	var audio *Audio
+	if cfg.useGoogleText2SpeechService {
+		logger.InfoLogger.Println("Using Google Cloud Text-to-Speech Service for audio generation")
+		audio, err = speakDescription(title+", "+copyright, region.String())
+		if err != nil {
+			logger.ErrLogger.Printf("failed to generate audio stream: %v\n", err)
+		}
+	}
+
 	return &Image{
+		Audio:       audio,
 		Description: strings.Join(lines, "\n"),
 		Image:       img,
 		DownloadURL: parsedRequestUri.String(),
@@ -263,5 +338,11 @@ func WithGoogleAppCredentials(credentials string) configOption {
 func WithFuriganaApiAppId(appId string) configOption {
 	return func(cfg *config) {
 		cfg.furiganaApiAppId = appId
+	}
+}
+
+func WithUseGoogleText2SpeechService(use bool) configOption {
+	return func(cfg *config) {
+		cfg.useGoogleText2SpeechService = use
 	}
 }
