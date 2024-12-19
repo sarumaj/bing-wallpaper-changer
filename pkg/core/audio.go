@@ -52,6 +52,10 @@ func (a *Audio) Play() error {
 		return nil
 	}
 
+	if audioCtx == nil {
+		return fmt.Errorf("audio context is not initialized")
+	}
+
 	if err := audioCtx.Initialize(a.SampleRate, 2, 2, 32); err != nil {
 		return err
 	}

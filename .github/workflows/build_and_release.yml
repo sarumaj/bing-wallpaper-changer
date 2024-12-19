@@ -39,15 +39,15 @@ jobs:
 
       - name: Install ALSA dependencies
         run: |
-          apt-get update
-          apt-get install -y libasound2-dev
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
 
       - name: Export Module Name
         id: export_module_name
         run: echo "MODULE_NAME=$(go mod edit -json | jq -r '.Module.Path')" >> "$GITHUB_OUTPUT"
 
       - name: Run linters
-        run: gofmt -s -d ./ && golangci-lint run -v --build-tags ci
+        run: gofmt -s -d ./ && golangci-lint run -v
 
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v5.0.0
