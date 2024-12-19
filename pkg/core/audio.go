@@ -5,50 +5,20 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sync"
 
 	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/hajimehoshi/go-mp3"
-	"github.com/hajimehoshi/oto"
 )
 
-var audioCtx audioContext
-
-type (
-	// thread-safe audio context.
-	audioContext struct {
-		context *oto.Context
-		mux     sync.Mutex
-	}
-
-	Audio struct {
-		Encoding   string
-		Source     io.Reader
-		SampleRate int
-	}
-)
-
-func (a *audioContext) Initialize(sampleRate, channels, bitDepth, bufferSize int) error {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
-	if audioCtx.context == nil {
-		ctx, err := oto.NewContext(sampleRate, channels, bitDepth, bufferSize)
-		if err != nil {
-			return err
-		}
-
-		audioCtx.context = ctx
-	}
-
-	return nil
+var audioCtx interface {
+	Initialize(sampleRate, channels, bitDepth, bufferSize int) error
+	NewPlayer() io.WriteCloser
 }
 
-func (a *audioContext) NewPlayer() io.WriteCloser {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
-	return a.context.NewPlayer()
+type Audio struct {
+	Encoding   string
+	Source     io.Reader
+	SampleRate int
 }
 
 // Implements the io.Closer interface.
