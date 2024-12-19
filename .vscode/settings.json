@@ -60,6 +60,7 @@
     "ldflags",
     "libasound",
     "libc",
+    "linkmode",
     "logr",
     "longrunning",
     "mailru",

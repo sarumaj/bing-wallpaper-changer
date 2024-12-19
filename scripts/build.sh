@@ -29,7 +29,7 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="$cgo_enabled" go build \
         -trimpath \
-        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags=-static" \
+        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -linkmode external -extldflags=-static" \
         -tags="osusergo netgo static_build" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"
