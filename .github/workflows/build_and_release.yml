@@ -45,6 +45,7 @@ jobs:
           sudo ldconfig
           echo "LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          ls -la /usr/lib/x86_64-linux-gnu/libasound.so*
 
       - name: Export Module Name
         id: export_module_name
