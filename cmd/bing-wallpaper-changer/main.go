@@ -169,7 +169,7 @@ func parseArgs(args ...string) {
 	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
 	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.UnitedStates))
 	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
-	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux-arm unless built with cgo)")
+	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux unless compiled with cgo)")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
