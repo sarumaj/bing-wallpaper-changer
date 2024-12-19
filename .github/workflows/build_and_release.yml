@@ -62,6 +62,8 @@ jobs:
 
       - name: Precompile binaries and upload assets
         uses: cli/gh-extension-precompile@v1
+        env:
+          CGO_ENABLED: 1
         with:
           build_script_override: "scripts/build.sh"
           go_version: ${{ matrix.go }}
