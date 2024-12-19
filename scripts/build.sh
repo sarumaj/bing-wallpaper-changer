@@ -28,18 +28,7 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
         ext=".exe"
     fi
 
-    cgo_enabled=0
-    export CC=""
-    export CXX=""
-
-    # Enable CGO and set cross-compilation toolchain for macOS
-    if [ "$goos" = "darwin" ]; then
-        cgo_enabled=1
-        export CC="/home/runner/work/osxcross/target/bin/o64-clang"
-        export CXX="/home/runner/work/osxcross/target/bin/o64-clang++"
-    fi
-
-    echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${cgo_enabled} CC=${CC} CXX=${CXX} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
+    echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${CGO_ENABLED:-0} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="$cgo_enabled" go build \
         -trimpath \

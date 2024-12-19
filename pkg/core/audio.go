@@ -26,10 +26,6 @@ func (a *Audio) Close() error { return nil }
 
 // Dump dumps the audio to the target path.
 func (a *Audio) Dump(path string) error {
-	if a == nil {
-		return nil
-	}
-
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
@@ -48,10 +44,6 @@ func (a *Audio) Dump(path string) error {
 
 // Play the audio stream.
 func (a *Audio) Play() error {
-	if a == nil {
-		return nil
-	}
-
 	if audioCtx == nil {
 		return fmt.Errorf("audio context is not initialized")
 	}
