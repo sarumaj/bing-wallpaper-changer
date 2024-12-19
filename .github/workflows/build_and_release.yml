@@ -42,6 +42,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev
 
+      - name: OSXCross for CGO Support
+        run: |
+          mkdir ../../osxcross
+          git clone https://github.com/plentico/osxcross-target.git ../../osxcross/target
+
       - name: Export Module Name
         id: export_module_name
         run: echo "MODULE_NAME=$(go mod edit -json | jq -r '.Module.Path')" >> "$GITHUB_OUTPUT"
