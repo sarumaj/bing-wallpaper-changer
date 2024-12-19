@@ -21,23 +21,28 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
     goarch="${p#*-}"
 
     ext=""
+    cgo_enabled=0
+    extldflags="-static"
+    build_tags="osusergo netgo static_build"
+
+    # Platform-specific flags
     if [ "$goos" = "windows" ]; then
         ext=".exe"
-    fi
-
-    cgo_enabled=0
-    if [ "$goos" = "linux" ] && [ "$goarch" == "amd64" ]; then
+    elif [ "$goos" = "linux" ] && [ "$goarch" = "amd64" ]; then
+        # libasound2-dev does not support static linking
         cgo_enabled=1
-        export LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
-        export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
+        extldflags="-L/usr/lib/x86_64-linux-gnu -lasound"
+        build_tags="osusergo netgo"
+        export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
+        export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
     fi
 
     echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${cgo_enabled} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${cgo_enabled}" go build \
         -trimpath \
-        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags=-static" \
-        -tags="osusergo netgo static_build" \
+        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
+        -tags="${build_tags}" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"
 
