@@ -28,6 +28,8 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
     cgo_enabled=0
     if [ "$goos" = "linux" ] && [ "$goarch" == "amd64" ]; then
         cgo_enabled=1
+        export LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH"
+        export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
     fi
 
     echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${cgo_enabled} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
