@@ -19,6 +19,7 @@
 
 It fetches the newest Bing wallpaper and sets it as a desktop background image.
 Custom watermark can be used on the downloaded image.
+GCP support for the translation and text2speech is provided as well.
 Done just for fun 😄
 
 ## Features
@@ -28,7 +29,8 @@ Done just for fun 😄
   - [x] Support multiple screen resolutions (😡 UltraHD is broken on the Bing side)
   - [x] Download wallpapers up to seven days in the past
 - [x] Draw title on wallpapers
-  - [x] Support google Cloud Translation Service for translation to English
+  - [x] Support Google Cloud Translation Service for translation to English
+  - [x] Support Google Cloud Text2Speech Service for accessibility
 - [x] Place QR code for the copyright links
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper
