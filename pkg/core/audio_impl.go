@@ -1,4 +1,4 @@
-//go:build !darwin && !(linux && arm64) && !(linux && arm)
+//go:build !(darwin || (linux && arm64) || (linux && arm))
 
 package core
 
