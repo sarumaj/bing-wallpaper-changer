@@ -2,12 +2,12 @@
 set -e
 
 supported_platforms=(
-    darwin-amd64
-    darwin-arm64
+    #darwin-amd64
+    #darwin-arm64
     linux-amd64
-    linux-arm64
-    windows-amd64
-    windows-arm64
+    #linux-arm64
+    #windows-amd64
+    #windows-arm64
 )
 
 VERSION="$1"
@@ -21,20 +21,26 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
     goarch="${p#*-}"
 
     ext=""
-    cgo_enabled=0
     extldflags="-static"
     build_tags="osusergo netgo static_build"
 
-    # Platform-specific flags
+    if [ "${CGO_ENABLED:-0}" = "1" ]; then
+        build_tags="osusergo netgo"
+        ext="-cgo"
+        if [ "$goos" = "linux" ]; then
+            extldflags="-L/usr/lib/x86_64-linux-gnu -lasound"
+        fi
+    fi
+
     if [ "$goos" = "windows" ]; then
         ext=".exe"
     fi
 
-    echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${cgo_enabled} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
+    echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${CGO_ENABLED:-0} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
 
-    GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${cgo_enabled}" go build \
+    GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${CGO_ENABLED:-0}" go build \
         -trimpath \
-        -ldflags="-s -w -H=windowsgui -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
+        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
         -tags="${build_tags}" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"
