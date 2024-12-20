@@ -314,7 +314,10 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	var audio *Audio
 	if cfg.useGoogleText2SpeechService {
 		logger.InfoLogger.Println("Using Google Cloud Text-to-Speech Service for audio generation")
-		audio, err = speakDescription(title+", "+copyright, region.String())
+		audio, err = speakDescription(title+", "+copyright, types.Map[types.Region, types.Region]{
+			types.Canada:     types.UnitedStates,
+			types.NewZealand: types.UnitedKingdom,
+		}.Get(region, region).String())
 		if err != nil {
 			logger.ErrLogger.Printf("failed to generate audio stream: %v\n", err)
 		}
