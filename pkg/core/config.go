@@ -4,6 +4,8 @@ import (
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 )
 
+const AppName = "Bing Wallpaper Changer"
+
 type Config struct {
 	Day                         types.Day        `json:"day"`
 	Region                      types.Region     `json:"region"`

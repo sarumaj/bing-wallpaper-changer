@@ -37,10 +37,10 @@ jobs:
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
           go install github.com/axw/gocov/gocov@latest
 
-      - name: Install ALSA dependencies
+      - name: Install ALSA and systray dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev
+          sudo apt-get install -y libasound2-dev libgtk-3-dev libayatana-appindicator3-dev
 
       - name: Export Module Name
         id: export_module_name

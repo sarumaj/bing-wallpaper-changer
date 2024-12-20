@@ -2,6 +2,7 @@
   "cSpell.words": [
     "ALSA",
     "apiv",
+    "appindicator",
     "bahlo",
     "Bild",
     "blang",
@@ -64,6 +65,7 @@
     "ldconfig",
     "ldflags",
     "libasound",
+    "libayatana",
     "libc",
     "linkmode",
     "logr",
@@ -109,6 +111,7 @@
     "walle",
     "webp",
     "werden",
+    "windowsgui",
     "Wird",
     "xanzy",
     "ysugimoto"

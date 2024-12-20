@@ -41,7 +41,7 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${cgo_enabled}" go build \
         -trimpath \
-        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
+        -ldflags="-s -w -H=windowsgui -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
         -tags="${build_tags}" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"

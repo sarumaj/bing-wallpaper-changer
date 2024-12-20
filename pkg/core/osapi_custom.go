@@ -5,7 +5,6 @@ package core
 import (
 	"embed"
 	"runtime"
-	"strings"
 
 	"github.com/energye/systray"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
@@ -98,8 +97,8 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 
 	var img *Image
 	onReady := func() {
-		systray.SetTitle("bing-wallpaper-changer")
-		systray.SetTooltip("bing-wallpaper-changer")
+		systray.SetTitle(AppName)
+		systray.SetTooltip(AppName)
 		setIcon("wallpaper"+ext, systray.SetIcon)
 
 		var mRefresh, mSpeak, mQuit *systray.MenuItem
@@ -118,7 +117,9 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 		mSpeak.Click(func() {
 			disable(mRefresh, mSpeak, mQuit)
 			if img.Audio != nil {
-				img.Audio.Play()
+				if err := img.Audio.Play(); err != nil {
+					logger.ErrLogger.Printf("Failed to play audio: %v", err)
+				}
 			}
 			enable(mRefresh, mSpeak, mQuit)
 		})
@@ -210,7 +211,7 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 		makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), cfg,
 			func(c *Config) string {
 				if c.FuriganaApiAppId != "" {
-					return strings.Repeat("*", 10)
+					return "[redacted]"
 				}
 
 				return "not set"
@@ -226,7 +227,7 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 		setIcon("quit"+ext, mQuit.SetIcon)
 		mQuit.Click(systray.Quit)
 
-		// initial wallpaper
+		// initial execution
 		disable(mRefresh, mSpeak, mQuit)
 		img = execute(cfg)
 		enable(mRefresh, mSpeak, mQuit)
@@ -235,7 +236,7 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 	onExit := func() {
 		// close the audio stream
 		if img.Audio != nil {
-			img.Audio.Close()
+			_ = img.Audio.Close()
 		}
 	}
 

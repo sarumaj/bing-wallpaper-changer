@@ -30,11 +30,12 @@ Done just for fun 😄
   - [x] Download wallpapers up to seven days in the past
 - [x] Draw title on wallpapers
   - [x] Support Google Cloud Translation Service for translation to English
-  - [x] Support Google Cloud Text2Speech Service for accessibility
+  - [x] Support Google Cloud Text2Speech Service for accessibility (playing the sound on darwin and linux only if compiled with CGO)
 - [x] Place QR code for the copyright links
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper
   - [x] Rotate if necessary (only clockwise rotation by 90° supported)
+- [x] System tray interface (available) on darwin and linux only if compiled with CGO)
 
 ## Usage
 
