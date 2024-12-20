@@ -35,7 +35,7 @@ Done just for fun 😄
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper
   - [x] Rotate if necessary (only clockwise rotation by 90° supported)
-- [x] System tray interface (available) on darwin and linux only if compiled with CGO)
+- [x] System tray interface (available on darwin and linux only if compiled with CGO)
 
 ## Usage
 
