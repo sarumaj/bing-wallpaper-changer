@@ -173,7 +173,6 @@ func speakDescription(description string, languageCode string) (*Audio, error) {
 		},
 		AudioConfig: &texttospeechpb.AudioConfig{
 			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
-			SpeakingRate:  0.9,
 			VolumeGainDb:  6.0,
 		},
 	})

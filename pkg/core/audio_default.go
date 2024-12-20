@@ -1,4 +1,4 @@
-//go:build darwin || (linux && !cgo)
+//go:build (darwin || linux) && !cgo
 
 package core
 

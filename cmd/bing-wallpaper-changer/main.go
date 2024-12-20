@@ -15,85 +15,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var config struct {
-	Day                         types.Day
-	Region                      types.Region
-	Resolution                  types.Resolution
-	DrawDescription             bool
-	DrawQRCode                  bool
-	Watermark                   string
-	DownloadOnly                bool
-	DownloadDirectory           string
-	RotateCounterClockwise      bool
-	GoogleAppCredentials        string
-	FuriganaApiAppId            string
-	UseGoogleText2SpeechService bool
-}
-
 // name of remote code repository mirror
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-12-19 09:34:58 UTC"
+var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.13"
+var Version = "v1.0.14"
 
 func main() {
+	var config core.Config
 	checkVersionOrUpdate()
-	parseArgs(os.Args[1:]...)
-
-	img, err := core.DownloadAndDecode(
-		config.Day, config.Region, config.Resolution,
-		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
-		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
-		core.WithUseGoogleText2SpeechService(config.UseGoogleText2SpeechService),
-	)
-	if err != nil {
-		logger.ErrLogger.Fatalln(err)
-	}
-
-	if config.Watermark != "" {
-		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
-			logger.ErrLogger.Fatalln(err)
-		}
-	}
-
-	if config.DrawDescription {
-		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
-			logger.ErrLogger.Fatalln(err)
-		}
-	}
-
-	if config.DrawQRCode {
-		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
-			logger.ErrLogger.Fatalln(err)
-		}
-	}
-
-	path, err := img.EncodeAndDump(config.DownloadDirectory)
-	if err != nil {
-		logger.ErrLogger.Fatalln(err)
-	}
-
-	logger.InfoLogger.Printf("Wallpaper saved to: %s", path)
-	if !config.DownloadOnly {
-		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
-			logger.ErrLogger.Fatalln(err)
-		}
-
-		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
-	}
-
-	if img.Audio == nil {
-		return
-	}
-
-	logger.InfoLogger.Println("Playing audio description")
-	if err := img.Audio.Play(); err != nil {
-		logger.ErrLogger.Printf("Failed to play audio: %v", err)
-
-	}
+	parseArgs(&config, os.Args[1:]...)
+	core.ShowTray(execute, &config)
 }
 
 // checkVersionOrUpdate checks if there is a new version available and updates the binary if necessary.
@@ -141,8 +76,66 @@ func checkVersionOrUpdate() {
 	logger.InfoLogger.Printf("Current version %s is the latest", Version)
 }
 
+// execute fetches the wallpaper, processes it, and sets it as the desktop wallpaper.
+func execute(config *core.Config) *core.Image {
+	img, err := core.DownloadAndDecode(
+		config.Day, config.Region, config.Resolution,
+		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
+		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
+		core.WithUseGoogleText2SpeechService(config.UseGoogleText2SpeechService),
+	)
+	if err != nil {
+		logger.ErrLogger.Fatalln(err)
+	}
+
+	if config.Watermark != "" {
+		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
+			logger.ErrLogger.Fatalln(err)
+		}
+	}
+
+	if config.DrawDescription {
+		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
+			logger.ErrLogger.Fatalln(err)
+		}
+	}
+
+	if config.DrawQRCode {
+		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
+			logger.ErrLogger.Fatalln(err)
+		}
+	}
+
+	path, err := img.EncodeAndDump(config.DownloadDirectory)
+	if err != nil {
+		logger.ErrLogger.Fatalln(err)
+	}
+
+	logger.InfoLogger.Printf("Wallpaper saved to: %s", path)
+	if !config.DownloadOnly {
+		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
+			logger.ErrLogger.Fatalln(err)
+		}
+
+		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
+	}
+
+	if img.Audio == nil {
+		return img
+	}
+
+	logger.InfoLogger.Println("Playing audio description")
+	if err := img.Audio.Play(); err != nil {
+		logger.ErrLogger.Printf("Failed to play audio: %v", err)
+
+	}
+
+	logger.InfoLogger.Println("Audio description played")
+	return img
+}
+
 // parseArgs parses the command line arguments and sets the configuration accordingly.
-func parseArgs(args ...string) {
+func parseArgs(config *core.Config, args ...string) {
 	var day int
 	var region string
 	var resolution string

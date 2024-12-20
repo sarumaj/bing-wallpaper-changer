@@ -32,7 +32,7 @@ func (e Embedded) String() string {
 	return strings.Join(e.Keys(), ", ")
 }
 
-// getEmbedded returns a map of embedded files.
+// GetEmbedded returns a map of embedded files.
 func getEmbedded(fsys embed.FS, path string) Embedded {
 	m := make(Embedded)
 	files, _ := fsys.ReadDir(path)
