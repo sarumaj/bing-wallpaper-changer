@@ -29,8 +29,15 @@ func enable(items ...*systray.MenuItem) {
 }
 
 // makeConfigInfo creates a read-only menu item
-func makeConfigInfo(option *systray.MenuItem, cfg *Config, lookup func(*Config) string) {
-	option.AddSubMenuItem(lookup(cfg), "Not editable").Disable()
+func makeConfigInfo(option *systray.MenuItem, sensitive bool, cfg *Config, lookup func(*Config) string) {
+	value := lookup(cfg)
+	if value == "" {
+		value = "not set"
+	} else if sensitive {
+		value = "[redacted]"
+	}
+
+	option.AddSubMenuItem(value, "Not editable").Disable()
 }
 
 // makeConfigOption creates a menu item with a checkbox
@@ -209,22 +216,16 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 				c.UseGoogleTranslateService = b
 			})
 
-		makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), cfg,
+		makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), false, cfg,
 			func(c *Config) string { return c.Watermark })
 
-		makeConfigInfo(mConfig.AddSubMenuItem("Google App Credentials", "Google App Credentials"), cfg,
+		makeConfigInfo(mConfig.AddSubMenuItem("Google App Credentials", "Google App Credentials"), false, cfg,
 			func(c *Config) string { return c.GoogleAppCredentials })
 
-		makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), cfg,
-			func(c *Config) string {
-				if c.FuriganaApiAppId != "" {
-					return "[redacted]"
-				}
+		makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), true, cfg,
+			func(c *Config) string { return c.FuriganaApiAppId })
 
-				return "not set"
-			})
-
-		makeConfigInfo(mConfig.AddSubMenuItem("Download Directory", "Download Directory"), cfg,
+		makeConfigInfo(mConfig.AddSubMenuItem("Download Directory", "Download Directory"), false, cfg,
 			func(c *Config) string { return c.DownloadDirectory })
 
 		systray.AddSeparator()
