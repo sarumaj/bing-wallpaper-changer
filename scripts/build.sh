@@ -28,13 +28,6 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
     # Platform-specific flags
     if [ "$goos" = "windows" ]; then
         ext=".exe"
-    elif [ "$goos" = "linux" ] && [ "$goarch" = "amd64" ]; then
-        # libasound2-dev does not support static linking
-        cgo_enabled=1
-        extldflags="-L/usr/lib/x86_64-linux-gnu -lasound"
-        build_tags="osusergo netgo"
-        export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
-        export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
     fi
 
     echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${cgo_enabled} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
