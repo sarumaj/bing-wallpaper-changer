@@ -202,6 +202,13 @@ func ShowTray(execute func(*Config) *Image, cfg *Config) {
 				c.UseGoogleText2SpeechService = b
 			})
 
+		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Translate Service", "Use Google Translate Service", false), cfg,
+			func(c *Config) bool { return c.UseGoogleTranslateService },
+			func(c *Config, b bool) {
+				logger.InfoLogger.Printf("Setting UseGoogleTranslateService: %v", b)
+				c.UseGoogleTranslateService = b
+			})
+
 		makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), cfg,
 			func(c *Config) string { return c.Watermark })
 

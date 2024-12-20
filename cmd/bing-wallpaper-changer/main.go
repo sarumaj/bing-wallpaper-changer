@@ -22,7 +22,7 @@ const remoteRepository = "sarumaj/bing-wallpaper-changer"
 var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.14"
+var Version = "v1.0.16"
 
 func main() {
 	var config core.Config
@@ -83,6 +83,7 @@ func execute(config *core.Config) *core.Image {
 		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
 		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
 		core.WithUseGoogleText2SpeechService(config.UseGoogleText2SpeechService),
+		core.WithUseGoogleTranslateService(config.UseGoogleTranslateService),
 	)
 	if err != nil {
 		logger.ErrLogger.Fatalln(err)
@@ -163,6 +164,7 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.UnitedStates))
 	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
 	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux unless compiled with cgo)")
+	opts.BoolVar(&config.UseGoogleTranslateService, "use-google-translate-service", false, "use the Google Translate service to translate the description to English")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {

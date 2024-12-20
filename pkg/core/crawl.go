@@ -29,19 +29,20 @@ const (
 )
 
 type (
-	config struct {
+	crawlerConfig struct {
 		bingUrl                     string
 		googleAppCredentials        string
 		furiganaApiAppId            string
 		furiganaApiUrl              string
 		useGoogleText2SpeechService bool
+		useGoogleTranslateService   bool
 	}
 
-	configOption func(*config)
+	crawlerConfigOption func(*crawlerConfig)
 )
 
 // configuration for the Bing, Goo Labs APIs and Google Cloud Translation Service.
-var cfg = config{
+var cfg = crawlerConfig{
 	bingUrl:        defaultBingUrl,
 	furiganaApiUrl: defaultFuriganaApiUrl,
 }
@@ -225,7 +226,7 @@ func translateDescription(description string, source, target string) (string, er
 }
 
 // DownloadAndDecode fetches the Bing wallpaper and decodes it.
-func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution, opts ...configOption) (*Image, error) {
+func DownloadAndDecode(day types.Day, region types.Region, resolution types.Resolution, opts ...crawlerConfigOption) (*Image, error) {
 	for _, opt := range opts {
 		opt(&cfg)
 	}
@@ -280,7 +281,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	description := title + ", " + copyright
 
 	var translated string
-	if region.IsAny(types.NonEnglishRegions...) && cfg.googleAppCredentials != "" {
+	if region.IsAny(types.NonEnglishRegions...) && cfg.useGoogleTranslateService && cfg.googleAppCredentials != "" {
 		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.UnitedStates.String())
 		translated, err = translateDescription(description, region.String(), types.UnitedStates.String())
 		if err != nil {
@@ -332,20 +333,26 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	}, err
 }
 
-func WithGoogleAppCredentials(credentials string) configOption {
-	return func(cfg *config) {
+func WithGoogleAppCredentials(credentials string) crawlerConfigOption {
+	return func(cfg *crawlerConfig) {
 		cfg.googleAppCredentials = credentials
 	}
 }
 
-func WithFuriganaApiAppId(appId string) configOption {
-	return func(cfg *config) {
+func WithFuriganaApiAppId(appId string) crawlerConfigOption {
+	return func(cfg *crawlerConfig) {
 		cfg.furiganaApiAppId = appId
 	}
 }
 
-func WithUseGoogleText2SpeechService(use bool) configOption {
-	return func(cfg *config) {
+func WithUseGoogleText2SpeechService(use bool) crawlerConfigOption {
+	return func(cfg *crawlerConfig) {
 		cfg.useGoogleText2SpeechService = use
+	}
+}
+
+func WithUseGoogleTranslateService(use bool) crawlerConfigOption {
+	return func(cfg *crawlerConfig) {
+		cfg.useGoogleTranslateService = use
 	}
 }
