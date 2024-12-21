@@ -11,6 +11,7 @@ require (
 	github.com/fogleman/gg v1.3.0
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/hajimehoshi/oto v1.0.1
+	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/rawnly/go-wallpaper v1.0.2
 	github.com/sarumaj/go-kakasi v1.0.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -44,7 +45,6 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect

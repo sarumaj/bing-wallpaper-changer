@@ -95,8 +95,13 @@ func setIcon(name string, setter func([]byte)) {
 	setter(data)
 }
 
-// ShowTray shows the tray icon and menu
-func ShowTray(execute func(*Config) *Image, cfg *Config) {
+// Run executes the given function with the given configuration.
+func Run(execute func(*Config) *Image, cfg *Config) {
+	if !cfg.Daemon {
+		_ = execute(cfg)
+		return
+	}
+
 	ext := ".png"
 	if runtime.GOOS == "windows" {
 		ext = ".ico"

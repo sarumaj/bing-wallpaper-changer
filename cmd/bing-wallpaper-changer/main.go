@@ -22,13 +22,13 @@ const remoteRepository = "sarumaj/bing-wallpaper-changer"
 var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.16"
+var Version = "v1.0.18"
 
 func main() {
 	var config core.Config
 	checkVersionOrUpdate()
 	parseArgs(&config, os.Args[1:]...)
-	core.ShowTray(execute, &config)
+	core.Run(execute, &config)
 }
 
 // checkVersionOrUpdate checks if there is a new version available and updates the binary if necessary.
@@ -86,36 +86,42 @@ func execute(config *core.Config) *core.Image {
 		core.WithUseGoogleTranslateService(config.UseGoogleTranslateService),
 	)
 	if err != nil {
-		logger.ErrLogger.Fatalln(err)
+		logger.ErrLogger.Println(err)
+		return nil
 	}
 
 	if config.Watermark != "" {
 		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
-			logger.ErrLogger.Fatalln(err)
+			logger.ErrLogger.Println(err)
+			return img
 		}
 	}
 
 	if config.DrawDescription {
 		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
-			logger.ErrLogger.Fatalln(err)
+			logger.ErrLogger.Println(err)
+			return img
 		}
 	}
 
 	if config.DrawQRCode {
 		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
-			logger.ErrLogger.Fatalln(err)
+			logger.ErrLogger.Println(err)
+			return img
 		}
 	}
 
 	path, err := img.EncodeAndDump(config.DownloadDirectory)
 	if err != nil {
-		logger.ErrLogger.Fatalln(err)
+		logger.ErrLogger.Println(err)
+		return img
 	}
 
 	logger.InfoLogger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
 		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
-			logger.ErrLogger.Fatalln(err)
+			logger.ErrLogger.Println(err)
+			return img
 		}
 
 		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
@@ -128,7 +134,7 @@ func execute(config *core.Config) *core.Image {
 	logger.InfoLogger.Println("Playing audio description")
 	if err := img.Audio.Play(); err != nil {
 		logger.ErrLogger.Printf("Failed to play audio: %v", err)
-
+		return img
 	}
 
 	logger.InfoLogger.Println("Audio description played")
@@ -165,10 +171,11 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
 	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux unless compiled with cgo)")
 	opts.BoolVar(&config.UseGoogleTranslateService, "use-google-translate-service", false, "use the Google Translate service to translate the description to English")
+	opts.BoolVar(&config.Daemon, "daemon", false, "run the application as a daemon process")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
-			logger.ErrLogger.Println(err)
+			logger.ErrLogger.Fatalln(err)
 		}
 		os.Exit(0)
 	}

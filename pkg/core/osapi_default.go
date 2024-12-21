@@ -2,8 +2,8 @@
 
 package core
 
-// ShowTray shows the tray icon and menu
-func ShowTray(execute func(*Config) *Image, cfg *Config) {
+// Run executes the given function with the given configuration.
+func Run(execute func(*Config) *Image, cfg *Config) {
 	// just execute
 	_ = execute(cfg)
 }

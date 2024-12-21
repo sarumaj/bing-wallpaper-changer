@@ -16,6 +16,7 @@ import (
 	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	translate "cloud.google.com/go/translate/apiv3"
 	"cloud.google.com/go/translate/apiv3/translatepb"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/sarumaj/go-kakasi"
@@ -66,7 +67,7 @@ func furiganizeGooLabsApi(description string) (string, error) {
 	}
 
 	// request furigana conversion.
-	raw, err := readResponse(http.PostForm(
+	raw, err := readResponse(retryablehttp.PostForm(
 		cfg.furiganaApiUrl+"/api/hiragana",
 		url.Values{
 			"app_id":      {cfg.furiganaApiAppId},
@@ -174,7 +175,6 @@ func speakDescription(description string, languageCode string) (*Audio, error) {
 		},
 		AudioConfig: &texttospeechpb.AudioConfig{
 			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
-			VolumeGainDb:  6.0,
 		},
 	})
 	if err != nil {
@@ -231,7 +231,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		opt(&cfg)
 	}
 
-	jsonRaw, err := readResponse(http.Get(
+	jsonRaw, err := readResponse(retryablehttp.Get(
 		cfg.bingUrl + "/HPImageArchive.aspx?" + url.Values{
 			"format": {"js"},
 			"idx":    {fmt.Sprintf("%d", day)},
@@ -264,7 +264,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		return nil, err
 	}
 
-	content, err := readResponse(http.Get(parsedRequestUri.String()))
+	content, err := readResponse(retryablehttp.Get(parsedRequestUri.String()))
 	if err != nil {
 		return nil, err
 	}

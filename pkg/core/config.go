@@ -20,4 +20,5 @@ type Config struct {
 	FuriganaApiAppId            string           `json:"furiganaApiAppId"`
 	UseGoogleText2SpeechService bool             `json:"useGoogleText2SpeechService"`
 	UseGoogleTranslateService   bool             `json:"useGoogleTranslateService"`
+	Daemon                      bool             `json:"daemon"`
 }

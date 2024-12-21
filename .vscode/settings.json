@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "abool",
     "ALSA",
     "apiv",
     "appindicator",
@@ -17,6 +18,7 @@
     "darf",
     "davidmz",
     "dawid",
+    "dbus",
     "Digue",
     "dpkg",
     "dylib",
@@ -43,6 +45,7 @@
     "GOARCH",
     "goccy",
     "gocov",
+    "godbus",
     "gofmt",
     "gofont",
     "golangci",
@@ -98,6 +101,7 @@
     "stdr",
     "steht",
     "systray",
+    "tevino",
     "texttospeech",
     "texttospeechpb",
     "tidwall",
