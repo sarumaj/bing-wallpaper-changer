@@ -128,7 +128,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		setIcon("play"+ext, mSpeak.SetIcon)
 		mSpeak.Click(func() {
 			disable(mRefresh, mSpeak, mQuit)
-			if img.Audio != nil {
+			if img != nil && img.Audio != nil {
 				if err := img.Audio.Play(); err != nil {
 					logger.ErrLogger.Printf("Failed to play audio: %v", err)
 				}
@@ -248,7 +248,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 
 	onExit := func() {
 		// close the audio stream
-		if img.Audio != nil {
+		if img != nil && img.Audio != nil {
 			_ = img.Audio.Close()
 		}
 	}
