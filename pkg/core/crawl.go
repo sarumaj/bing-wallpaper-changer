@@ -174,7 +174,8 @@ func speakDescription(description string, languageCode string) (*Audio, error) {
 			Name:         voice.Name,
 		},
 		AudioConfig: &texttospeechpb.AudioConfig{
-			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
+			AudioEncoding:   texttospeechpb.AudioEncoding_MP3,
+			SampleRateHertz: voice.NaturalSampleRateHertz,
 		},
 	})
 	if err != nil {
@@ -184,7 +185,7 @@ func speakDescription(description string, languageCode string) (*Audio, error) {
 	return &Audio{
 		Encoding:   texttospeechpb.AudioEncoding_MP3.String(),
 		Source:     bytes.NewReader(result.AudioContent),
-		SampleRate: int(voice.NaturalSampleRateHertz),
+		SampleRate: voice.NaturalSampleRateHertz,
 	}, nil
 }
 

@@ -1,43 +1,55 @@
-//go:build (!darwin && !linux) || cgo
+//go:build !linux || cgo
 
 package core
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"sync"
+	"sync/atomic"
+	"time"
 
-	"github.com/hajimehoshi/oto"
+	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
+	"github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/mp3"
+	"github.com/gopxl/beep/v2/speaker"
 )
 
-// thread-safe audio context.
-type audioContext struct {
-	context *oto.Context
-	mux     sync.Mutex
-}
+var once sync.Once
+var initialSampleRate atomic.Int32
 
-func (a *audioContext) Initialize(sampleRate, channels, bitDepth, bufferSize int) error {
-	a.mux.Lock()
-	defer a.mux.Unlock()
+// Play plays the audio.
+func (a *Audio) Play() error {
+	var err error
+	once.Do(func() {
+		initialSampleRate.Store(a.SampleRate)
+		err = speaker.Init(beep.SampleRate(a.SampleRate), beep.SampleRate(a.SampleRate).N(time.Second/10))
+	})
+	if err != nil {
+		return err
+	}
 
-	if a.context == nil {
-		ctx, err := oto.NewContext(sampleRate, channels, bitDepth, bufferSize)
+	var buffer bytes.Buffer
+	var stream beep.Streamer
+	switch a.Encoding {
+	case texttospeechpb.AudioEncoding_MP3.String():
+		stream, _, err = mp3.Decode(io.NopCloser(io.TeeReader(a.Source, &buffer)))
 		if err != nil {
 			return err
 		}
+		defer stream.(beep.StreamSeekCloser).Close()
 
-		a.context = ctx
+		if oldSampleRate := initialSampleRate.Load(); a.SampleRate != oldSampleRate {
+			stream = beep.Resample(4, beep.SampleRate(oldSampleRate), beep.SampleRate(a.SampleRate), stream)
+		}
+
+	default:
+		return fmt.Errorf("unsupported audio encoding: %s", a.Encoding)
+
 	}
 
+	speaker.PlayAndWait(stream)
+	a.Source = &buffer
 	return nil
-}
-
-func (a *audioContext) NewPlayer() io.WriteCloser {
-	a.mux.Lock()
-	defer a.mux.Unlock()
-
-	return a.context.NewPlayer()
-}
-
-func init() {
-	audioCtx = &audioContext{}
 }
