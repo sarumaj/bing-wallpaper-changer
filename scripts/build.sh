@@ -27,9 +27,7 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
     if [ "${CGO_ENABLED:-0}" = "1" ]; then
         build_tags="osusergo netgo"
         ext="-cgo"
-        if [ "$goos" = "linux" ]; then
-            extldflags="-L/usr/lib/x86_64-linux-gnu -lasound"
-        fi
+        extldflags=""
     fi
 
     if [ "$goos" = "windows" ]; then
