@@ -3,16 +3,22 @@
 package core
 
 import (
+	"bytes"
 	"embed"
+	"image/png"
 	"runtime"
 
 	"github.com/energye/systray"
+	"github.com/pkg/browser"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
+	"golang.design/x/clipboard"
 )
 
 //go:embed icons/*.png icons/*.ico
 var icons embed.FS
+
+var clipboardErr = clipboard.Init()
 
 // disable the menu items
 func disable(items ...*systray.MenuItem) {
@@ -84,15 +90,51 @@ func makeConfigSection[K comparable](section map[K]*systray.MenuItem, cfg *Confi
 	}
 }
 
-// setIcon sets the icon of the menu item
-func setIcon(name string, setter func([]byte)) {
-	data, err := icons.ReadFile("icons/" + name)
-	if err != nil {
-		logger.ErrLogger.Printf("Failed to read icon %s: %s", name, err)
-		return
+// makePropertyCopyAction creates a menu item with a copy action
+func makePropertyCopyAction(item *systray.MenuItem, img *Image, format clipboard.Format, getter func(*Image) []byte) {
+	item.SetIcon(readIcon("copy"))
+	item.Click(func() {
+		if img == nil {
+			return
+		}
+
+		if clipboardErr != nil {
+			logger.ErrLogger.Printf("Failed to initialize clipboard: %v", clipboardErr)
+			return
+		}
+
+		_ = clipboard.Write(format, getter(img))
+	})
+}
+
+// makePropertyOpenAction creates a menu item with an open URL action
+func makePropertyOpenAction(item *systray.MenuItem, img *Image, getter func(*Image) string) {
+	item.SetIcon(readIcon("open"))
+	item.Click(func() {
+		if img == nil {
+			return
+		}
+
+		if err := browser.OpenURL(getter(img)); err != nil {
+			logger.ErrLogger.Printf("Failed to open search URL: %v", err)
+		}
+	})
+}
+
+// readIcon reads the icon file
+func readIcon(name string) []byte {
+	ext := ".png"
+	if runtime.GOOS == "windows" {
+		ext = ".ico"
 	}
 
-	setter(data)
+	data, err := icons.ReadFile("icons/" + name + ext)
+	if err != nil {
+		logger.ErrLogger.Printf("Failed to read icon %s: %s", name+ext, err)
+		return nil
+	}
+
+	return data
 }
 
 // Run executes the given function with the given configuration.
@@ -102,30 +144,28 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		return
 	}
 
-	ext := ".png"
-	if runtime.GOOS == "windows" {
-		ext = ".ico"
-	}
-
-	var img *Image
+	img := &Image{}
 	onReady := func() {
 		systray.SetTitle(AppName)
 		systray.SetTooltip(AppName)
-		setIcon("wallpaper"+ext, systray.SetIcon)
+		systray.SetIcon(readIcon("wallpaper"))
 
 		var mRefresh, mSpeak, mQuit *systray.MenuItem
 
 		// Main section
 		mRefresh = systray.AddMenuItem("Refresh", "Refresh the wallpaper")
-		setIcon("refresh"+ext, mRefresh.SetIcon)
+		mRefresh.SetIcon(readIcon("refresh"))
 		mRefresh.Click(func() {
 			disable(mRefresh, mSpeak, mQuit)
-			img = execute(cfg)
-			enable(mRefresh, mSpeak, mQuit)
+			*img = *execute(cfg)
+			enable(mRefresh, mQuit)
+			if img != nil && img.Audio != nil {
+				mSpeak.Enable()
+			}
 		})
 
 		mSpeak = systray.AddMenuItem("Speak", "Speak the wallpaper description")
-		setIcon("play"+ext, mSpeak.SetIcon)
+		mSpeak.SetIcon(readIcon("play"))
 		mSpeak.Click(func() {
 			disable(mRefresh, mSpeak, mQuit)
 			if img != nil && img.Audio != nil {
@@ -137,8 +177,8 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		})
 
 		systray.AddSeparator()
-		// Config section
 
+		// Config section
 		mConfig := systray.AddMenuItem("Configure", "Configure the wallpaper settings")
 		mConfigDay := mConfig.AddSubMenuItem("Day", "Day of the Bing wallpaper")
 		makeConfigSection(map[types.Day]*systray.MenuItem{
@@ -234,16 +274,51 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			func(c *Config) string { return c.DownloadDirectory })
 
 		systray.AddSeparator()
-		// Quit section
 
+		// Property section
+		mProperties := systray.AddMenuItem("Properties", "Properties of the wallpaper")
+
+		makePropertyCopyAction(mProperties.
+			AddSubMenuItem("Image", "Image data of the wallpaper").
+			AddSubMenuItem("Copy", "Copy the image data to the clipboard"),
+			img, clipboard.FmtImage,
+			func(i *Image) []byte {
+				buf := bytes.NewBuffer(nil)
+				_ = png.Encode(buf, i)
+				return buf.Bytes()
+			})
+
+		makePropertyCopyAction(mProperties.
+			AddSubMenuItem("Description", "Description of the wallpaper").
+			AddSubMenuItem("Copy", "Copy the description to the clipboard"),
+			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.Description) })
+
+		mPropertiesSearchUrl := mProperties.AddSubMenuItem("Search URL", "Search URL of the wallpaper")
+		makePropertyCopyAction(mPropertiesSearchUrl.AddSubMenuItem("Copy", "Copy the search URL to the clipboard"),
+			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.SearchURL) })
+		makePropertyOpenAction(mPropertiesSearchUrl.AddSubMenuItem("Open", "Open the search URL in the browser"), img,
+			func(i *Image) string { return i.SearchURL })
+
+		mPropertiesDownloadUrl := mProperties.AddSubMenuItem("Download URL", "Download URL of the wallpaper")
+		makePropertyCopyAction(mPropertiesDownloadUrl.AddSubMenuItem("Copy", "Copy the download URL to the clipboard"),
+			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.DownloadURL) })
+		makePropertyOpenAction(mPropertiesDownloadUrl.AddSubMenuItem("Open", "Open the download URL in the browser"), img,
+			func(i *Image) string { return i.DownloadURL })
+
+		systray.AddSeparator()
+
+		// Quit section
 		mQuit = systray.AddMenuItem("Quit", "Quit the whole app")
-		setIcon("quit"+ext, mQuit.SetIcon)
+		mQuit.SetIcon(readIcon("quit"))
 		mQuit.Click(systray.Quit)
 
 		// initial execution
 		disable(mRefresh, mSpeak, mQuit)
-		img = execute(cfg)
-		enable(mRefresh, mSpeak, mQuit)
+		*img = *execute(cfg)
+		enable(mRefresh, mQuit)
+		if img != nil && img.Audio != nil {
+			mSpeak.Enable()
+		}
 	}
 
 	onExit := func() {

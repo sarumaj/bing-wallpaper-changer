@@ -12,11 +12,13 @@ require (
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/hajimehoshi/oto v1.0.1
 	github.com/hashicorp/go-retryablehttp v0.7.7
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/rawnly/go-wallpaper v1.0.2
 	github.com/sarumaj/go-kakasi v1.0.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.5
 	github.com/tidwall/gjson v1.18.0
+	golang.design/x/clipboard v0.7.0
 	golang.org/x/image v0.23.0
 	google.golang.org/api v0.213.0
 )
