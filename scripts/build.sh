@@ -30,15 +30,17 @@ for ((j = 0; j < ${#supported_platforms[@]}; j++)); do
         extldflags=""
     fi
 
+    ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'"
     if [ "$goos" = "windows" ]; then
-        ext=".exe"
+        ext+=".exe"
+        ldflags+=" -H windowsgui"
     fi
 
     echo "go build ( $((j + 1)) / ${#supported_platforms[@]} ): GOOS=${goos} GOARCH=${goarch} CGO_ENABLED=${CGO_ENABLED:-0} -o dist/bing-wallpaper-changer_${VERSION}_${p}${ext}"
 
     GOOS="$goos" GOARCH="$goarch" CGO_ENABLED="${CGO_ENABLED:-0}" go build \
         -trimpath \
-        -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.BuildDate=${BUILD_DATE}' -extldflags '${extldflags}'" \
+        -ldflags="${ldflags}" \
         -tags="${build_tags}" \
         -o "dist/bing-wallpaper-changer_${VERSION}_${p}${ext}.uncompressed" \
         "cmd/bing-wallpaper-changer/main.go"
