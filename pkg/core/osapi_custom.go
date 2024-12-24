@@ -6,10 +6,13 @@ import (
 	"bytes"
 	"embed"
 	"image/png"
+	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/energye/systray"
 	"github.com/pkg/browser"
+	"github.com/sarumaj/bing-wallpaper-changer/pkg/extras"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"golang.design/x/clipboard"
@@ -20,22 +23,15 @@ var icons embed.FS
 
 var clipboardErr = clipboard.Init()
 
-// disable the menu items
-func disable(items ...*systray.MenuItem) {
+// modify modifies the given menu items with the given operation.
+func modify(op func(*systray.MenuItem), items ...*systray.MenuItem) {
 	for _, item := range items {
-		item.Disable()
-	}
-}
-
-// enable the menu items
-func enable(items ...*systray.MenuItem) {
-	for _, item := range items {
-		item.Enable()
+		op(item)
 	}
 }
 
 // makeConfigInfo creates a read-only menu item
-func makeConfigInfo(option *systray.MenuItem, sensitive bool, cfg *Config, lookup func(*Config) string) {
+func makeConfigInfo(option *systray.MenuItem, sensitive bool, cfg *Config, lookup func(*Config) string, editor func(*Config, string)) {
 	value := lookup(cfg)
 	if value == "" {
 		value = "not set"
@@ -43,6 +39,12 @@ func makeConfigInfo(option *systray.MenuItem, sensitive bool, cfg *Config, looku
 		value = "[redacted]"
 	}
 
+	if editor != nil {
+		option.AddSubMenuItem(value, "Open").Click(func() {
+			editor(cfg, lookup(cfg))
+		})
+		return
+	}
 	option.AddSubMenuItem(value, "Not editable").Disable()
 }
 
@@ -115,10 +117,47 @@ func makePropertyOpenAction(item *systray.MenuItem, img *Image, getter func(*Ima
 			return
 		}
 
+		if runtime.GOOS == "linux" {
+			if value, ok := os.LookupEnv("GTK_PATH"); ok {
+				_ = os.Unsetenv("GTK_PATH")
+				defer os.Setenv("GTK_PATH", value)
+			}
+		}
+
 		if err := browser.OpenURL(getter(img)); err != nil {
-			logger.ErrLogger.Printf("Failed to open search URL: %v", err)
+			logger.ErrLogger.Printf("Failed to open %s: %v", item, err)
 		}
 	})
+}
+
+// openDirectory opens the directory in the file explorer
+func openDirectory(path string) {
+	if path == "" {
+		return
+	}
+
+	if extras.EmbeddedWatermarks[path] != nil {
+		var err error
+		path, err = extras.EmbeddedWatermarks.ToFiles("watermarks")
+		if err != nil {
+			logger.ErrLogger.Printf("Failed to extract watermarks: %v", err)
+			return
+		}
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		logger.ErrLogger.Printf("Failed to open directory %s: %v", path, err)
+		return
+	}
+
+	if !info.IsDir() {
+		path = filepath.Dir(path)
+	}
+
+	if err := browser.OpenURL("file://" + path); err != nil {
+		logger.ErrLogger.Printf("Failed to open directory %s: %v", path, err)
+	}
 }
 
 // readIcon reads the icon file
@@ -150,30 +189,32 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		systray.SetTooltip(AppName)
 		systray.SetIcon(readIcon("wallpaper"))
 
-		var mRefresh, mSpeak, mQuit *systray.MenuItem
+		var mRefresh, mSpeak, mQuit, mPropertiesAudio *systray.MenuItem
 
 		// Main section
 		mRefresh = systray.AddMenuItem("Refresh", "Refresh the wallpaper")
 		mRefresh.SetIcon(readIcon("refresh"))
 		mRefresh.Click(func() {
-			disable(mRefresh, mSpeak, mQuit)
+			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
+			mPropertiesAudio.Hide()
 			*img = *execute(cfg)
-			enable(mRefresh, mQuit)
+			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
 			if img != nil && img.Audio != nil {
 				mSpeak.Enable()
+				mPropertiesAudio.Show()
 			}
 		})
 
 		mSpeak = systray.AddMenuItem("Speak", "Speak the wallpaper description")
 		mSpeak.SetIcon(readIcon("play"))
 		mSpeak.Click(func() {
-			disable(mRefresh, mSpeak, mQuit)
+			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
 			if img != nil && img.Audio != nil {
 				if err := img.Audio.Play(); err != nil {
 					logger.ErrLogger.Printf("Failed to play audio: %v", err)
 				}
 			}
-			enable(mRefresh, mSpeak, mQuit)
+			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mSpeak, mQuit)
 		})
 
 		systray.AddSeparator()
@@ -262,30 +303,44 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			})
 
 		makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), false, cfg,
-			func(c *Config) string { return c.Watermark })
+			func(c *Config) string { return c.Watermark }, func(_ *Config, s string) { openDirectory(s) })
 
 		makeConfigInfo(mConfig.AddSubMenuItem("Google App Credentials", "Google App Credentials"), false, cfg,
-			func(c *Config) string { return c.GoogleAppCredentials })
+			func(c *Config) string { return c.GoogleAppCredentials }, func(_ *Config, s string) { openDirectory(s) })
 
 		makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), true, cfg,
-			func(c *Config) string { return c.FuriganaApiAppId })
+			func(c *Config) string { return c.FuriganaApiAppId }, nil)
 
 		makeConfigInfo(mConfig.AddSubMenuItem("Download Directory", "Download Directory"), false, cfg,
-			func(c *Config) string { return c.DownloadDirectory })
+			func(c *Config) string { return c.DownloadDirectory }, func(_ *Config, s string) { openDirectory(s) })
 
 		systray.AddSeparator()
 
 		// Property section
 		mProperties := systray.AddMenuItem("Properties", "Properties of the wallpaper")
 
-		makePropertyCopyAction(mProperties.
-			AddSubMenuItem("Image", "Image data of the wallpaper").
+		mPropertiesImage := mProperties.AddSubMenuItem("Image", "Image data of the wallpaper")
+		makePropertyCopyAction(mPropertiesImage.
 			AddSubMenuItem("Copy", "Copy the image data to the clipboard"),
 			img, clipboard.FmtImage,
 			func(i *Image) []byte {
 				buf := bytes.NewBuffer(nil)
 				_ = png.Encode(buf, i)
 				return buf.Bytes()
+			})
+		makePropertyOpenAction(mPropertiesImage.AddSubMenuItem("Open", "Open the image in the browser"), img,
+			func(i *Image) string { return "file://" + i.Location })
+
+		mPropertiesAudio = mProperties.
+			AddSubMenuItem("Audio", "Audio data of the wallpaper")
+		makePropertyOpenAction(mPropertiesAudio.
+			AddSubMenuItem("Open", "Open the audio in the browser"), img,
+			func(i *Image) string {
+				if i.Audio != nil {
+					return "file://" + i.Audio.Location
+				}
+
+				return ""
 			})
 
 		makePropertyCopyAction(mProperties.
@@ -313,11 +368,13 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		mQuit.Click(systray.Quit)
 
 		// initial execution
-		disable(mRefresh, mSpeak, mQuit)
+		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
+		mPropertiesAudio.Hide()
 		*img = *execute(cfg)
-		enable(mRefresh, mQuit)
+		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
 		if img != nil && img.Audio != nil {
 			mSpeak.Enable()
+			mPropertiesAudio.Show()
 		}
 	}
 

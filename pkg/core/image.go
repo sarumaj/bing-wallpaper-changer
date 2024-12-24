@@ -21,6 +21,7 @@ type Image struct {
 	Description string
 	SearchURL   string
 	DownloadURL string
+	Location    string
 }
 
 // Equals returns true if the given image is equal to the receiver.
@@ -74,6 +75,7 @@ func (img *Image) EncodeAndDump(targetDir string) (string, error) {
 		}
 	}
 
+	img.Location = filePath
 	return target.Name(), png.Encode(target, img)
 }
 

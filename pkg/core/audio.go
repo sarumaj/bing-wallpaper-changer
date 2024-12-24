@@ -8,6 +8,7 @@ import (
 
 type Audio struct {
 	Encoding   string
+	Location   string
 	Source     io.Reader
 	SampleRate int32
 }
@@ -30,5 +31,6 @@ func (a *Audio) Dump(path string) error {
 	}
 
 	a.Source = &buffer
+	a.Location = path
 	return nil
 }

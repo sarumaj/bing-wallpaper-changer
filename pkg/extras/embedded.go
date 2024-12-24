@@ -8,13 +8,39 @@ import (
 	"compress/gzip"
 	"embed"
 	"io"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 )
 
 // Embedded is a map of embedded files.
 type Embedded map[string]io.ReadCloser
+
+func (e Embedded) ToFiles(name string) (string, error) {
+	dir := filepath.Join(os.TempDir(), name)
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return "", err
+	}
+
+	for k, v := range e {
+		path := filepath.Join(dir, k)
+		f, err := os.Create(path)
+		if err != nil {
+			return "", err
+		}
+
+		if _, err := io.Copy(f, v); err != nil {
+			return "", err
+		}
+
+		_ = f.Close()
+	}
+
+	return dir, nil
+}
 
 // Keys returns the keys of the embedded map.
 func (e Embedded) Keys() []string {
@@ -46,7 +72,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 		var err error
 		r, err = fsys.Open(filepath.ToSlash(filepath.Join(path, file.Name())))
 		if err != nil {
-			panic(err)
+			logger.ErrLogger.Panicln(err)
 		}
 
 		defer r.Close()
@@ -54,7 +80,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 		if filepath.Ext(file.Name()) == ".gz" {
 			r, err = gzip.NewReader(r)
 			if err != nil {
-				panic(err)
+				logger.ErrLogger.Panicln(err)
 			}
 
 			defer r.Close()
@@ -62,7 +88,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 
 		raw, err := io.ReadAll(r)
 		if err != nil {
-			panic(err)
+			logger.ErrLogger.Panicln(err)
 		}
 
 		m[strings.TrimSuffix(file.Name(), ".gz")] = &multiReadReader{data: raw}
