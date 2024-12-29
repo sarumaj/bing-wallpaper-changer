@@ -5,17 +5,21 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	translate "cloud.google.com/go/translate/apiv3"
 	"cloud.google.com/go/translate/apiv3/translatepb"
+	"github.com/corpix/uarand"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
@@ -48,6 +52,47 @@ var cfg = crawlerConfig{
 	furiganaApiUrl: defaultFuriganaApiUrl,
 }
 
+// retryablehttp client configuration.
+var client = func() *retryablehttp.Client {
+	client := retryablehttp.NewClient()
+	client.HTTPClient.Jar = nil
+	client.HTTPClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	client.PrepareRetry = func(req *http.Request) error {
+		req.Header.Set("User-Agent", uarand.GetRandom())
+		return nil
+	}
+
+	client.RetryWaitMax = time.Millisecond * 1500
+	client.RetryWaitMin = time.Millisecond * 500
+	client.RetryMax = 100
+	client.Logger = logger.InfoLogger
+
+	// random backoff
+	client.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+		return time.Duration(rand.Int64N(int64(max-min)) + int64(min))
+	}
+
+	client.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+		var buffer bytes.Buffer
+		if _, err := io.Copy(&buffer, resp.Body); err != nil {
+			return true, err
+		}
+		_ = resp.Body.Close()
+
+		if buffer.Len() == 0 {
+			return true, nil
+		}
+
+		resp.Body = io.NopCloser(&buffer)
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+	}
+
+	return client
+}()
+
 // furiganizeGooLabsApi annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the Goo Labs API to convert Kanji to Furigana.
 func furiganizeGooLabsApi(description string) (string, error) {
@@ -67,7 +112,7 @@ func furiganizeGooLabsApi(description string) (string, error) {
 	}
 
 	// request furigana conversion.
-	raw, err := readResponse(retryablehttp.PostForm(
+	raw, err := readResponse(client.PostForm(
 		cfg.furiganaApiUrl+"/api/hiragana",
 		url.Values{
 			"app_id":      {cfg.furiganaApiAppId},
@@ -121,7 +166,9 @@ func readResponse(resp *http.Response, err error) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		req, _ := httputil.DumpRequestOut(resp.Request, true)
+		dump, _ := httputil.DumpResponse(resp, true)
+		return nil, fmt.Errorf("unexpected status code: %d\n(%s)\n(%s)", resp.StatusCode, req, dump)
 	}
 
 	return io.ReadAll(resp.Body)
@@ -232,21 +279,22 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		opt(&cfg)
 	}
 
-	jsonRaw, err := readResponse(retryablehttp.Get(
-		cfg.bingUrl + "/HPImageArchive.aspx?" + url.Values{
-			"format": {"js"},
-			"idx":    {fmt.Sprintf("%d", day)},
-			"n":      {"1"},
-			"mkt":    {region.String()},
-		}.Encode(),
-	))
+	jsonRaw, err := readResponse(client.Get(cfg.bingUrl + "/HPImageArchive.aspx?" + url.Values{
+		"format": {"js"},
+		"idx":    {fmt.Sprintf("%d", day)},
+		"n":      {"1"},
+		"mkt":    {region.String()},
+	}.Encode()))
 	if err != nil {
 		return nil, err
 	}
 
 	path := gjson.GetBytes(jsonRaw, "images.0.url").String()
-	path = regexp.MustCompile(`_\d+x\d+`).ReplaceAllString(path, "_"+resolution.String())
+	if path == "" {
+		return nil, fmt.Errorf("no image found in response: %s", jsonRaw)
+	}
 
+	path = regexp.MustCompile(`_(?:\d+x\d+|UHD)`).ReplaceAllString(path, "_"+resolution.BingFormat())
 	parsedRequestUri, err := url.ParseRequestURI(path)
 	if err != nil {
 		return nil, err
@@ -265,7 +313,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 		return nil, err
 	}
 
-	content, err := readResponse(retryablehttp.Get(parsedRequestUri.String()))
+	content, err := readResponse(client.Get(parsedRequestUri.String()))
 	if err != nil {
 		return nil, err
 	}
@@ -283,14 +331,14 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 
 	var translated string
 	if region.IsAny(types.NonEnglishRegions...) && cfg.useGoogleTranslateService && cfg.googleAppCredentials != "" {
-		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.UnitedStates.String())
-		translated, err = translateDescription(description, region.String(), types.UnitedStates.String())
+		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.RegionUnitedStates.String())
+		translated, err = translateDescription(description, region.String(), types.RegionUnitedStates.String())
 		if err != nil {
 			logger.ErrLogger.Printf("failed to translate description: %v\n", err)
 		}
 	}
 
-	if region == types.Japan {
+	if region == types.RegionJapan {
 		var fn func(string) (string, error)
 		if cfg.furiganaApiAppId != "" {
 			logger.InfoLogger.Println("Using Goo Labs API for Furigana conversion")
@@ -317,8 +365,12 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	if cfg.useGoogleText2SpeechService {
 		logger.InfoLogger.Println("Using Google Cloud Text-to-Speech Service for audio generation")
 		audio, err = speakDescription(title+", "+copyright, types.Map[types.Region, types.Region]{
-			types.Canada:     types.UnitedStates,
-			types.NewZealand: types.UnitedKingdom,
+			types.RegionBrazil:        types.Region{Country: "PT", LanguageCode: "pt"},
+			types.RegionCanadaEnglish: types.RegionUnitedStates,
+			types.RegionCanadaFrench:  types.RegionFrance,
+			types.RegionIndia:         types.RegionUnitedKingdom,
+			types.RegionNewZealand:    types.RegionUnitedKingdom,
+			types.RegionOther:         types.RegionUnitedStates,
 		}.Get(region, region).String())
 		if err != nil {
 			logger.ErrLogger.Printf("failed to generate audio stream: %v\n", err)

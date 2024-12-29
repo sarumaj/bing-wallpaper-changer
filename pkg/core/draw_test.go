@@ -20,10 +20,10 @@ func TestDrawDescription(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"test#1", args{extras.DefaultFontName, types.TopCenter}, false},
-		{"test#2", args{extras.DefaultFontName, types.BottomCenter}, false},
+		{"test#1", args{extras.DefaultFontName, types.PositionTopCenter}, false},
+		{"test#2", args{extras.DefaultFontName, types.PositionBottomCenter}, false},
 		{"test#3", args{extras.DefaultFontName, types.Position(-1)}, true},
-		{"test#4", args{"unknown", types.TopCenter}, true},
+		{"test#4", args{"unknown", types.PositionTopCenter}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			got := SetupTestImage(t)
@@ -54,12 +54,12 @@ func TestDrawQRCode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"test#1", args{types.HighDefinition, types.TopLeft}, false},
-		{"test#2", args{types.HighDefinition, types.BottomRight}, false},
-		{"test#3", args{types.HighDefinition, types.BottomLeft}, false},
-		{"test#4", args{types.HighDefinition, types.TopRight}, false},
+		{"test#1", args{types.HighDefinition, types.PositionTopLeft}, false},
+		{"test#2", args{types.HighDefinition, types.PositionBottomRight}, false},
+		{"test#3", args{types.HighDefinition, types.PositionBottomLeft}, false},
+		{"test#4", args{types.HighDefinition, types.PositionTopRight}, false},
 		{"test#5", args{types.HighDefinition, types.Position(-1)}, true},
-		{"test#6", args{types.Resolution{}, types.TopLeft}, true},
+		{"test#6", args{types.Resolution{}, types.PositionTopLeft}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			got := SetupTestImage(t)

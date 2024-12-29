@@ -5,22 +5,48 @@ import (
 	"strings"
 )
 
-const (
-	Canada Region = iota
-	China
-	Germany
-	Japan
-	NewZealand
-	UnitedKingdom
-	UnitedStates
+var (
+	RegionBrazil        = Region{"BR", "pt"}
+	RegionCanadaEnglish = Region{"CA", "en"}
+	RegionCanadaFrench  = Region{"CA", "fr"}
+	RegionChina         = Region{"CN", "zh"}
+	RegionFrance        = Region{"FR", "fr"}
+	RegionGermany       = Region{"DE", "de"}
+	RegionItaly         = Region{"IT", "it"}
+	RegionIndia         = Region{"IN", "hi"}
+	RegionJapan         = Region{"JP", "ja"}
+	RegionNewZealand    = Region{"NZ", "en"}
+	RegionSpain         = Region{"ES", "es"}
+	RegionOther         = Region{"ROW", "en"}
+	RegionUnitedKingdom = Region{"GB", "en"}
+	RegionUnitedStates  = Region{"US", "en"}
 )
 
-var AllowedRegions = Regions{Canada, China, Germany, Japan, NewZealand, UnitedKingdom, UnitedStates}
-var EnglishRegions = Regions{Canada, NewZealand, UnitedKingdom, UnitedStates}
-var NonEnglishRegions = Regions{China, Germany, Japan}
+var AllowedRegions = Regions{
+	RegionBrazil,
+	RegionCanadaEnglish,
+	RegionCanadaFrench,
+	RegionChina,
+	RegionFrance,
+	RegionGermany,
+	RegionItaly,
+	RegionIndia,
+	RegionJapan,
+	RegionNewZealand,
+	RegionSpain,
+	RegionOther,
+	RegionUnitedKingdom,
+	RegionUnitedStates,
+}
+
+var EnglishRegions = AllowedRegions.Filter(func(r Region) bool { return r.LanguageCode == "en" })
+var NonEnglishRegions = AllowedRegions.Filter(func(r Region) bool { return r.LanguageCode != "en" })
 
 // Region is an enum type for locales.
-type Region int
+type Region struct {
+	Country      string
+	LanguageCode string
+}
 
 // IsAny returns true if the Region is any of the provided Regions.
 func (r Region) IsAny(o ...Region) bool {
@@ -35,36 +61,23 @@ func (r Region) IsAny(o ...Region) bool {
 
 // String returns the code representation of the Region.
 func (r Region) String() string {
-	switch r {
-	case Canada:
-		return "en-CA"
-
-	case China:
-		return "zh-CN"
-
-	case Germany:
-		return "de-DE"
-
-	case Japan:
-		return "ja-JP"
-
-	case NewZealand:
-		return "en-NZ"
-
-	case UnitedKingdom:
-		return "en-GB"
-
-	case UnitedStates:
-		return "en-US"
-
-	default:
-		return "Unknown"
-
-	}
+	return r.LanguageCode + "-" + r.Country
 }
 
 // Regions is a slice of Region.
 type Regions []Region
+
+// Filter returns a new Regions with the Regions that satisfy the predicate.
+func (r Regions) Filter(fn func(Region) bool) Regions {
+	var s Regions
+	for _, v := range r {
+		if fn(v) {
+			s = append(s, v)
+		}
+	}
+
+	return s
+}
 
 // String returns the string representation of the Regions.
 func (r Regions) String() string {
@@ -84,5 +97,5 @@ func ParseLocale(s string) (Region, error) {
 		}
 	}
 
-	return -1, fmt.Errorf("unsupported region: %s, expected any of: %s", s, AllowedRegions)
+	return Region{}, fmt.Errorf("unsupported region: %s, expected any of: %s", s, AllowedRegions)
 }

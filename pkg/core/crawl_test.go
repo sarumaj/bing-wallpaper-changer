@@ -52,7 +52,7 @@ func TestDownloadAndDecode(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"test#1", args{types.Today, types.Germany, types.HighDefinition}, false},
+		{"test#1", args{types.DayToday, types.RegionGermany, types.HighDefinition}, false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := DownloadAndDecode(tt.args.day, tt.args.region, tt.args.resolution)

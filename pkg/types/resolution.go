@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	LowDefinition       = Resolution{1366, 768}
-	HighDefinition      = Resolution{1920, 1080}
-	UltraHighDefinition = Resolution{3840, 2160}
+	LowDefinition       = Resolution{1366, 768, "SD"}
+	HighDefinition      = Resolution{1920, 1080, "HD"}
+	UltraHighDefinition = Resolution{3840, 2160, "UHD"}
 )
 
 var AllowedResolutions = Resolutions{LowDefinition, HighDefinition, UltraHighDefinition}
@@ -16,6 +16,18 @@ var AllowedResolutions = Resolutions{LowDefinition, HighDefinition, UltraHighDef
 // Resolution is a struct for screen resolutions.
 type Resolution struct {
 	Width, Height int
+	Alias         string
+}
+
+func (r Resolution) BingFormat() string {
+	switch r {
+	case UltraHighDefinition:
+		return r.Alias
+
+	default:
+		return fmt.Sprintf("%dx%d", r.Width, r.Height)
+
+	}
 }
 
 // String returns the string representation of the Resolution.
@@ -41,14 +53,19 @@ func ParseResolution(s string) (Resolution, error) {
 
 	var r Resolution
 	_, err := fmt.Sscanf(s, "%dx%d", &r.Width, &r.Height)
-	if err != nil {
-		return r, defaultErr
+	for _, allowed := range AllowedResolutions {
+		switch {
+		case strings.EqualFold(s, allowed.Alias), r.Width == allowed.Width && r.Height == allowed.Height:
+			return Resolution{
+				Width:  allowed.Width,
+				Height: allowed.Height,
+				Alias:  allowed.Alias,
+			}, nil
+		}
 	}
 
-	for _, allowed := range AllowedResolutions {
-		if r == allowed {
-			return r, nil
-		}
+	if err != nil {
+		return r, defaultErr
 	}
 
 	return Resolution{}, defaultErr

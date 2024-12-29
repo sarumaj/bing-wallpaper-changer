@@ -197,7 +197,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		mRefresh.Click(func() {
 			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
 			mPropertiesAudio.Hide()
-			*img = *execute(cfg)
+			img.Update(execute(cfg))
 			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
 			if img != nil && img.Audio != nil {
 				mSpeak.Enable()
@@ -223,14 +223,14 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		mConfig := systray.AddMenuItem("Configure", "Configure the wallpaper settings")
 		mConfigDay := mConfig.AddSubMenuItem("Day", "Day of the Bing wallpaper")
 		makeConfigSection(map[types.Day]*systray.MenuItem{
-			types.Today:                 mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
-			types.Yesterday:             mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
-			types.TheDayBeforeYesterday: mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
-			types.ThreeDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
-			types.FourDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
-			types.FiveDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
-			types.SixDaysAgo:            mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
-			types.SevenDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
+			types.DayToday:                 mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
+			types.DayYesterday:             mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
+			types.DayTheDayBeforeYesterday: mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
+			types.DayThreeDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
+			types.DayFourDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
+			types.DayFiveDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
+			types.DaySixDaysAgo:            mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
+			types.DaySevenDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
 		}, cfg, func(c *Config) types.Day { return c.Day }, func(c *Config, d types.Day) {
 			logger.InfoLogger.Printf("Setting Day: %v", d)
 			c.Day = d
@@ -238,13 +238,20 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 
 		mConfigRegion := mConfig.AddSubMenuItem("Region", "Region of the Bing wallpaper")
 		makeConfigSection(map[types.Region]*systray.MenuItem{
-			types.Canada:        mConfigRegion.AddSubMenuItemCheckbox("Canada", "Canada region", false),
-			types.China:         mConfigRegion.AddSubMenuItemCheckbox("China", "China region", false),
-			types.Germany:       mConfigRegion.AddSubMenuItemCheckbox("Germany", "Germany region", false),
-			types.Japan:         mConfigRegion.AddSubMenuItemCheckbox("Japan", "Japan region", false),
-			types.NewZealand:    mConfigRegion.AddSubMenuItemCheckbox("New Zealand", "New Zealand region", false),
-			types.UnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "United Kingdom region", false),
-			types.UnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "United States region", false),
+			types.RegionBrazil:        mConfigRegion.AddSubMenuItemCheckbox("Brazil Portuguese", "Brazilian region", false),
+			types.RegionCanadaEnglish: mConfigRegion.AddSubMenuItemCheckbox("Canada English", "Canadian region (English)", false),
+			types.RegionCanadaFrench:  mConfigRegion.AddSubMenuItemCheckbox("Canada French", "Canadian region (French)", false),
+			types.RegionChina:         mConfigRegion.AddSubMenuItemCheckbox("China", "Chinese region", false),
+			types.RegionFrance:        mConfigRegion.AddSubMenuItemCheckbox("France", "French region", false),
+			types.RegionGermany:       mConfigRegion.AddSubMenuItemCheckbox("Germany", "German region", false),
+			types.RegionIndia:         mConfigRegion.AddSubMenuItemCheckbox("India", "Indian region", false),
+			types.RegionItaly:         mConfigRegion.AddSubMenuItemCheckbox("Italy", "Italian region", false),
+			types.RegionJapan:         mConfigRegion.AddSubMenuItemCheckbox("Japan", "Japanese region", false),
+			types.RegionNewZealand:    mConfigRegion.AddSubMenuItemCheckbox("New Zealand", "New Zealand's region", false),
+			types.RegionOther:         mConfigRegion.AddSubMenuItemCheckbox("Other", "Other regions", false),
+			types.RegionSpain:         mConfigRegion.AddSubMenuItemCheckbox("Spain", "Spanish region", false),
+			types.RegionUnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "British region", false),
+			types.RegionUnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "US region", false),
 		}, cfg, func(c *Config) types.Region { return c.Region }, func(c *Config, r types.Region) {
 			logger.InfoLogger.Printf("Setting Region: %v", r)
 			c.Region = r
@@ -370,7 +377,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		// initial execution
 		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
 		mPropertiesAudio.Hide()
-		*img = *execute(cfg)
+		img.Update(execute(cfg))
 		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
 		if img != nil && img.Audio != nil {
 			mSpeak.Enable()

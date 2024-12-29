@@ -98,14 +98,14 @@ func execute(config *core.Config) *core.Image {
 	}
 
 	if config.DrawDescription {
-		if err := img.DrawDescription(types.TopCenter, extras.DefaultFontName); err != nil {
+		if err := img.DrawDescription(types.PositionTopCenter, extras.DefaultFontName); err != nil {
 			logger.ErrLogger.Println(err)
 			return img
 		}
 	}
 
 	if config.DrawQRCode {
-		if err := img.DrawQRCode(config.Resolution, types.TopRight); err != nil {
+		if err := img.DrawQRCode(config.Resolution, types.PositionTopRight); err != nil {
 			logger.ErrLogger.Println(err)
 			return img
 		}
@@ -158,8 +158,8 @@ func parseArgs(config *core.Config, args ...string) {
 	defaultDownloadDirectory, _ := os.UserHomeDir()
 	defaultDownloadDirectory += "/Pictures/BingWallpapers"
 
-	opts.IntVar(&day, "day", int(types.Today), "the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago")
-	opts.StringVar(&region, "region", types.Germany.String(), fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", types.AllowedRegions))
+	opts.IntVar(&day, "day", int(types.DayToday), "the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago")
+	opts.StringVar(&region, "region", types.RegionGermany.String(), fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", types.AllowedRegions))
 	opts.StringVar(&resolution, "resolution", types.HighDefinition.String(), fmt.Sprintf("the resolution of the wallpaper, allowed values are: %s", types.AllowedResolutions))
 	opts.BoolVar(&config.DrawDescription, "description", true, "draw the description on the wallpaper")
 	opts.BoolVar(&config.DrawQRCode, "qrcode", true, "draw the QR code on the wallpaper")
@@ -167,7 +167,7 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.BoolVar(&config.DownloadOnly, "download-only", false, "download the wallpaper only")
 	opts.StringVar(&config.DownloadDirectory, "download-directory", defaultDownloadDirectory, "the directory to download the wallpaper to")
 	opts.BoolVar(&config.RotateCounterClockwise, "rotate-counter-clockwise", false, "rotate the watermark counter-clockwise if necessary (default is clockwise)")
-	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.UnitedStates))
+	opts.StringVar(&config.GoogleAppCredentials, "google-app-credentials", "", fmt.Sprintf("the path to the Google App credentials file for the translation service for %s to %s,\nif not provided, the translation service will not be used", types.NonEnglishRegions, types.RegionUnitedStates))
 	opts.StringVar(&config.FuriganaApiAppId, "furigana-api-app-id", "", "the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, github.com/sarumaj/go-kakasi will be used")
 	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux unless compiled with cgo)")
 	opts.BoolVar(&config.UseGoogleTranslateService, "use-google-translate-service", false, "use the Google Translate service to translate the description to English")

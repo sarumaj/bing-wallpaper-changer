@@ -3,15 +3,15 @@ package types
 import "strings"
 
 const (
-	TopLeft Position = iota
-	TopRight
-	BottomLeft
-	BottomRight
-	TopCenter
-	BottomCenter
-	CenterLeft
-	CenterRight
-	Center
+	PositionTopLeft Position = iota
+	PositionTopRight
+	PositionBottomLeft
+	PositionBottomRight
+	PositionTopCenter
+	PositionBottomCenter
+	PositionCenterLeft
+	PositionCenterRight
+	PositionCenter
 )
 
 // Position is an enum type for relative positions.
@@ -19,38 +19,22 @@ type Position int
 
 // String returns the string representation of the Position.
 func (p Position) String() string {
-	switch p {
-	case TopLeft:
-		return "TopLeft"
-
-	case TopRight:
-		return "TopRight"
-
-	case BottomLeft:
-		return "BottomLeft"
-
-	case BottomRight:
-		return "BottomRight"
-
-	case TopCenter:
-		return "TopCenter"
-
-	case BottomCenter:
-		return "BottomCenter"
-
-	case CenterLeft:
-		return "CenterLeft"
-
-	case CenterRight:
-		return "CenterRight"
-
-	case Center:
-		return "Center"
-
-	default:
+	s, ok := map[Position]string{
+		PositionTopLeft:      "TopLeft",
+		PositionTopRight:     "TopRight",
+		PositionBottomLeft:   "BottomLeft",
+		PositionBottomRight:  "BottomRight",
+		PositionTopCenter:    "TopCenter",
+		PositionBottomCenter: "BottomCenter",
+		PositionCenterLeft:   "CenterLeft",
+		PositionCenterRight:  "CenterRight",
+		PositionCenter:       "Center",
+	}[p]
+	if !ok {
 		return "Unknown"
-
 	}
+
+	return s
 }
 
 // Positions is a slice of Position.

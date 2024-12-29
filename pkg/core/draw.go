@@ -74,14 +74,14 @@ func (img *Image) DrawDescription(position types.Position, fontName string) erro
 
 	var x, y, w, h float64
 	switch position {
-	case types.TopCenter:
+	case types.PositionTopCenter:
 		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-r, y_margin+r, textWidth+r*2, textHeight+2*r
 
-	case types.BottomCenter:
+	case types.PositionBottomCenter:
 		x, y, w, h = float64(imgBounds.Dx())/2-textWidth/2-r, float64(imgBounds.Dy())-textHeight*3/2-y_margin-r, textWidth+r*2, textHeight+2*r
 
 	default:
-		return fmt.Errorf("unsupported position: %s, expected any of: %s", position, types.Positions{types.TopCenter, types.BottomCenter})
+		return fmt.Errorf("unsupported position: %s, expected any of: %s", position, types.Positions{types.PositionTopCenter, types.PositionBottomCenter})
 
 	}
 
@@ -161,20 +161,21 @@ func (img *Image) DrawQRCode(resolution types.Resolution, position types.Positio
 
 	x, y := 0, 0
 	switch position {
-	case types.TopLeft:
+	case types.PositionTopLeft:
 		x, y = x_offset, y_offset
 
-	case types.TopRight:
+	case types.PositionTopRight:
 		x, y = imgBounds.Dx()-size-x_offset, y_offset
 
-	case types.BottomLeft:
+	case types.PositionBottomLeft:
 		x, y = x_offset, imgBounds.Dy()-size-y_offset
 
-	case types.BottomRight:
+	case types.PositionBottomRight:
 		x, y = imgBounds.Dx()-size-x_offset, imgBounds.Dy()-size-y_offset
 
 	default:
-		return fmt.Errorf("unsupported position: %s, expected any of: %s", position, types.Positions{types.TopLeft, types.TopRight, types.BottomLeft, types.BottomRight})
+		return fmt.Errorf("unsupported position: %s, expected any of: %s", position,
+			types.Positions{types.PositionTopLeft, types.PositionTopRight, types.PositionBottomLeft, types.PositionBottomRight})
 
 	}
 

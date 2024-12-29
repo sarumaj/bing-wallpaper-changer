@@ -79,6 +79,30 @@ func (img *Image) EncodeAndDump(targetDir string) (string, error) {
 	return target.Name(), png.Encode(target, img)
 }
 
+// Update updates the receiver with the given image.
+func (i *Image) Update(o *Image) {
+	if o == nil {
+		return
+	}
+
+	i.Image = o.Image
+	i.Description = o.Description
+	i.SearchURL = o.SearchURL
+	i.DownloadURL = o.DownloadURL
+	i.Location = o.Location
+
+	if o.Audio == nil {
+		return
+	}
+
+	i.Audio = &Audio{
+		Encoding:   o.Audio.Encoding,
+		Location:   o.Audio.Location,
+		Source:     o.Audio.Source,
+		SampleRate: o.Audio.SampleRate,
+	}
+}
+
 // getDecoder returns the decoder for the given file path.
 func getDecoder(path string) (decoder func(io.Reader) (image.Image, error), err error) {
 	switch ext := filepath.Ext(path); ext {

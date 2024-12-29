@@ -3,14 +3,14 @@ package types
 import "fmt"
 
 const (
-	Today Day = iota
-	Yesterday
-	TheDayBeforeYesterday
-	ThreeDaysAgo
-	FourDaysAgo
-	FiveDaysAgo
-	SixDaysAgo
-	SevenDaysAgo
+	DayToday Day = iota
+	DayYesterday
+	DayTheDayBeforeYesterday
+	DayThreeDaysAgo
+	DayFourDaysAgo
+	DayFiveDaysAgo
+	DaySixDaysAgo
+	DaySevenDaysAgo
 )
 
 // Day is an enum type for relative days.
@@ -20,7 +20,7 @@ type Day int
 
 // IsValid returns true if the Day is valid.
 func (d Day) IsValid() error {
-	if d < Today || d > SevenDaysAgo {
+	if d < DayToday || d > DaySevenDaysAgo {
 		return fmt.Errorf("invalid day: %d, allowed values are 0 to 7", d)
 	}
 
@@ -29,32 +29,19 @@ func (d Day) IsValid() error {
 
 // String returns the string representation of the Day.
 func (d Day) String() string {
-	switch d {
-	case Today:
-		return "Today"
-
-	case Yesterday:
-		return "Yesterday"
-
-	case TheDayBeforeYesterday:
-		return "The day before yesterday"
-
-	case ThreeDaysAgo:
-		return "Three days ago"
-
-	case FourDaysAgo:
-		return "Four days ago"
-
-	case FiveDaysAgo:
-		return "Five days ago"
-
-	case SixDaysAgo:
-		return "Six days ago"
-
-	case SevenDaysAgo:
-		return "Seven days ago"
-
-	default:
+	s, ok := map[Day]string{
+		DayToday:                 "Today",
+		DayYesterday:             "Yesterday",
+		DayTheDayBeforeYesterday: "The day before yesterday",
+		DayThreeDaysAgo:          "Three days ago",
+		DayFourDaysAgo:           "Four days ago",
+		DayFiveDaysAgo:           "Five days ago",
+		DaySixDaysAgo:            "Six days ago",
+		DaySevenDaysAgo:          "Seven days ago",
+	}[d]
+	if !ok {
 		return "Unknown"
 	}
+
+	return s
 }

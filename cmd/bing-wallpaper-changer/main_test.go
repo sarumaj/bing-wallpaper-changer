@@ -29,8 +29,8 @@ func TestFlow(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"test#1", args{types.HighDefinition, types.Germany, types.Today, types.BottomRight, types.TopCenter}, false},
-		{"test#2", args{types.HighDefinition, types.Germany, types.Today, types.BottomRight, types.BottomLeft}, true},
+		{"test#1", args{types.HighDefinition, types.RegionGermany, types.DayToday, types.PositionBottomRight, types.PositionTopCenter}, false},
+		{"test#2", args{types.HighDefinition, types.RegionGermany, types.DayToday, types.PositionBottomRight, types.PositionBottomLeft}, true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			err := func(t testing.TB) error {

@@ -16,6 +16,7 @@ func TestParseResolution(t *testing.T) {
 		{"test#4", "3840x2400", Resolution{}, true},
 		{"test#5", "1366x768", LowDefinition, false},
 		{"test#6", "invalid", Resolution{}, true},
+		{"test#7", "HD", HighDefinition, false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := ParseResolution(tt.res)
