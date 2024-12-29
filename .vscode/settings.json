@@ -20,6 +20,7 @@
     "davidmz",
     "dawid",
     "dbus",
+    "Dconf",
     "Digue",
     "dpkg",
     "dylib",
@@ -57,6 +58,7 @@
     "goregular",
     "Griechenland",
     "Griechisch",
+    "gsettings",
     "hajimehoshi",
     "herunterladen",
     "Hintergrundbild",
@@ -72,10 +74,13 @@
     "lasound",
     "ldconfig",
     "ldflags",
+    "Levelf",
+    "Levelln",
     "libasound",
     "libayatana",
     "libc",
     "linkmode",
+    "Logln",
     "logr",
     "longrunning",
     "mailru",
@@ -127,5 +132,8 @@
     "Wird",
     "xanzy",
     "ysugimoto"
-  ]
+  ],
+  "cSpell.enabledFileTypes": {
+    "go.sum": false
+  }
 }

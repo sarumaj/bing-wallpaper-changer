@@ -68,7 +68,7 @@ var client = func() *retryablehttp.Client {
 	client.RetryWaitMax = time.Millisecond * 1500
 	client.RetryWaitMin = time.Millisecond * 500
 	client.RetryMax = 100
-	client.Logger = logger.InfoLogger
+	client.Logger = logger.Logger
 
 	// random backoff
 	client.Backoff = func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
@@ -80,9 +80,8 @@ var client = func() *retryablehttp.Client {
 		if _, err := io.Copy(&buffer, resp.Body); err != nil {
 			return true, err
 		}
-		_ = resp.Body.Close()
 
-		if buffer.Len() == 0 {
+		if buffer.Len() == 0 || bytes.Contains(buffer.Bytes(), []byte("The request is blocked.")) {
 			return true, nil
 		}
 
@@ -252,7 +251,7 @@ func translateDescription(description string, source, target string) (string, er
 	defer client.Close()
 
 	location := fmt.Sprintf("projects/%s/locations/global", gjson.GetBytes(contents, "project_id").String())
-	logger.InfoLogger.Println("Using Google Translation service location:", location)
+	logger.Logger.Println("Using Google Translation service location:", location)
 
 	result, err := client.TranslateText(ctx, &translatepb.TranslateTextRequest{
 		Contents:           []string{description},
@@ -331,26 +330,26 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 
 	var translated string
 	if region.IsAny(types.NonEnglishRegions...) && cfg.useGoogleTranslateService && cfg.googleAppCredentials != "" {
-		logger.InfoLogger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.RegionUnitedStates.String())
+		logger.Logger.Println("Using Google Cloud Translation Service for description translation from", region.String(), "to", types.RegionUnitedStates.String())
 		translated, err = translateDescription(description, region.String(), types.RegionUnitedStates.String())
 		if err != nil {
-			logger.ErrLogger.Printf("failed to translate description: %v\n", err)
+			logger.Logger.Printf("failed to translate description: %v\n", err)
 		}
 	}
 
 	if region == types.RegionJapan {
 		var fn func(string) (string, error)
 		if cfg.furiganaApiAppId != "" {
-			logger.InfoLogger.Println("Using Goo Labs API for Furigana conversion")
+			logger.Logger.Println("Using Goo Labs API for Furigana conversion")
 			fn = furiganizeGooLabsApi
 		} else {
-			logger.InfoLogger.Println("Using go-kakasi for Furigana conversion")
+			logger.Logger.Println("Using go-kakasi for Furigana conversion")
 			fn = furiganizeKakasi
 		}
 
 		annotated, err := fn(description)
 		if err != nil {
-			logger.ErrLogger.Printf("failed to annotate description: %v\n", err)
+			logger.Logger.Printf("failed to annotate description: %v\n", err)
 		} else {
 			description = annotated
 		}
@@ -363,7 +362,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 
 	var audio *Audio
 	if cfg.useGoogleText2SpeechService {
-		logger.InfoLogger.Println("Using Google Cloud Text-to-Speech Service for audio generation")
+		logger.Logger.Println("Using Google Cloud Text-to-Speech Service for audio generation")
 		audio, err = speakDescription(title+", "+copyright, types.Map[types.Region, types.Region]{
 			types.RegionBrazil:        types.Region{Country: "PT", LanguageCode: "pt"},
 			types.RegionCanadaEnglish: types.RegionUnitedStates,
@@ -373,7 +372,7 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 			types.RegionOther:         types.RegionUnitedStates,
 		}.Get(region, region).String())
 		if err != nil {
-			logger.ErrLogger.Printf("failed to generate audio stream: %v\n", err)
+			logger.Logger.Printf("failed to generate audio stream: %v\n", err)
 		}
 	}
 

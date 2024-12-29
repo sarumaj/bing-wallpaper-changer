@@ -1,7 +1,9 @@
 package core
 
 import (
-	"github.com/rawnly/go-wallpaper"
+	_ "unsafe"
+
+	"github.com/sarumaj/go-wallpaper"
 )
 
 // Mode represents the wallpaper setting mode.

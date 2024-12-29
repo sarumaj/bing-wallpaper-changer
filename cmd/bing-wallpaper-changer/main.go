@@ -22,7 +22,7 @@ const remoteRepository = "sarumaj/bing-wallpaper-changer"
 var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.0.21"
+var Version = "v1.1.1"
 
 func main() {
 	var config core.Config
@@ -35,45 +35,45 @@ func main() {
 func checkVersionOrUpdate() {
 	parsed, err := semver.ParseTolerant(Version)
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to parse version: %s", err)
+		logger.Logger.Printf("Failed to parse version: %s", err)
 		return
 	}
 
 	source, err := selfupdate.NewGitHubSource(selfupdate.GitHubConfig{APIToken: ""})
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to setup source: %s", err)
+		logger.Logger.Printf("Failed to setup source: %s", err)
 		return
 	}
 
 	updater, err := selfupdate.NewUpdater(selfupdate.Config{Source: source, Validator: &selfupdate.SHAValidator{}})
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to setup updater: %s", err)
+		logger.Logger.Printf("Failed to setup updater: %s", err)
 		return
 	}
 
 	repository := selfupdate.ParseSlug(remoteRepository)
 	latest, found, err := updater.DetectLatest(context.Background(), repository)
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to detect latest version: %s", err)
+		logger.Logger.Printf("Failed to detect latest version: %s", err)
 		return
 	}
 
 	if !found {
-		logger.ErrLogger.Printf("No update found")
+		logger.Logger.Printf("No update found")
 		return
 	}
 
 	if latest.GreaterThan(parsed.String()) {
 		if _, err := updater.UpdateSelf(context.Background(), parsed.String(), repository); err != nil {
-			logger.ErrLogger.Printf("Failed to update: %s", err)
+			logger.Logger.Printf("Failed to update: %s", err)
 			return
 		}
 
-		logger.InfoLogger.Printf("Updated to version %s", latest.Version())
+		logger.Logger.Printf("Updated to version %s", latest.Version())
 		return
 	}
 
-	logger.InfoLogger.Printf("Current version %s is the latest", Version)
+	logger.Logger.Printf("Current version %s is the latest", Version)
 }
 
 // execute fetches the wallpaper, processes it, and sets it as the desktop wallpaper.
@@ -86,58 +86,58 @@ func execute(config *core.Config) *core.Image {
 		core.WithUseGoogleTranslateService(config.UseGoogleTranslateService),
 	)
 	if err != nil {
-		logger.ErrLogger.Println(err)
+		logger.Logger.Println(err)
 		return nil
 	}
 
 	if config.Watermark != "" {
 		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
-			logger.ErrLogger.Println(err)
+			logger.Logger.Println(err)
 			return img
 		}
 	}
 
 	if config.DrawDescription {
 		if err := img.DrawDescription(types.PositionTopCenter, extras.DefaultFontName); err != nil {
-			logger.ErrLogger.Println(err)
+			logger.Logger.Println(err)
 			return img
 		}
 	}
 
 	if config.DrawQRCode {
 		if err := img.DrawQRCode(config.Resolution, types.PositionTopRight); err != nil {
-			logger.ErrLogger.Println(err)
+			logger.Logger.Println(err)
 			return img
 		}
 	}
 
 	path, err := img.EncodeAndDump(config.DownloadDirectory)
 	if err != nil {
-		logger.ErrLogger.Println(err)
+		logger.Logger.Println(err)
 		return img
 	}
 
-	logger.InfoLogger.Printf("Wallpaper saved to: %s", path)
+	logger.Logger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
 		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
-			logger.ErrLogger.Println(err)
+			logger.Logger.Println(err)
 			return img
 		}
 
-		logger.InfoLogger.Printf("Wallpaper set to: %s", path)
+		logger.Logger.Printf("Wallpaper set to: %s", path)
 	}
 
 	if img.Audio == nil {
 		return img
 	}
 
-	logger.InfoLogger.Println("Playing audio description")
+	logger.Logger.Println("Playing audio description")
 	if err := img.Audio.Play(); err != nil {
-		logger.ErrLogger.Printf("Failed to play audio: %v", err)
+		logger.Logger.Printf("Failed to play audio: %v", err)
 		return img
 	}
 
-	logger.InfoLogger.Println("Audio description played")
+	logger.Logger.Println("Audio description played")
 	return img
 }
 
@@ -172,30 +172,36 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.BoolVar(&config.UseGoogleText2SpeechService, "use-google-text2speech-service", false, "use the Google Text2Speech service to record and play the audio description (not supported on darwin, and linux unless compiled with cgo)")
 	opts.BoolVar(&config.UseGoogleTranslateService, "use-google-translate-service", false, "use the Google Translate service to translate the description to English")
 	opts.BoolVar(&config.Daemon, "daemon", false, "run the application as a daemon process")
+	opts.BoolVar(&config.Debug, "debug", false, "enable debug mode")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {
-			logger.ErrLogger.Fatalln(err)
+			logger.Logger.Fatalln(err)
 		}
 		os.Exit(0)
+	}
+
+	if config.Debug {
+		logger.Logger.SetLevel(logger.LogLevelDebug)
+		logger.Logger.SetLevel(logger.LogLevelDebug)
 	}
 
 	var err error
 	config.Region, err = types.ParseLocale(region)
 	if err != nil {
 		opts.Usage()
-		logger.ErrLogger.Fatalln(err)
+		logger.Logger.Fatalln(err)
 	}
 
 	config.Day = types.Day(day)
 	if err := config.Day.IsValid(); err != nil {
 		opts.Usage()
-		logger.ErrLogger.Fatalln(err)
+		logger.Logger.Fatalln(err)
 	}
 
 	config.Resolution, err = types.ParseResolution(resolution)
 	if err != nil {
 		opts.Usage()
-		logger.ErrLogger.Fatalln(err)
+		logger.Logger.Fatalln(err)
 	}
 }

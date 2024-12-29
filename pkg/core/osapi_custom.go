@@ -101,7 +101,7 @@ func makePropertyCopyAction(item *systray.MenuItem, img *Image, format clipboard
 		}
 
 		if clipboardErr != nil {
-			logger.ErrLogger.Printf("Failed to initialize clipboard: %v", clipboardErr)
+			logger.Logger.Printf("Failed to initialize clipboard: %v", clipboardErr)
 			return
 		}
 
@@ -125,7 +125,7 @@ func makePropertyOpenAction(item *systray.MenuItem, img *Image, getter func(*Ima
 		}
 
 		if err := browser.OpenURL(getter(img)); err != nil {
-			logger.ErrLogger.Printf("Failed to open %s: %v", item, err)
+			logger.Logger.Printf("Failed to open %s: %v", item, err)
 		}
 	})
 }
@@ -140,14 +140,14 @@ func openDirectory(path string) {
 		var err error
 		path, err = extras.EmbeddedWatermarks.ToFiles("watermarks")
 		if err != nil {
-			logger.ErrLogger.Printf("Failed to extract watermarks: %v", err)
+			logger.Logger.Printf("Failed to extract watermarks: %v", err)
 			return
 		}
 	}
 
 	info, err := os.Stat(path)
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to open directory %s: %v", path, err)
+		logger.Logger.Printf("Failed to open directory %s: %v", path, err)
 		return
 	}
 
@@ -156,7 +156,7 @@ func openDirectory(path string) {
 	}
 
 	if err := browser.OpenURL("file://" + path); err != nil {
-		logger.ErrLogger.Printf("Failed to open directory %s: %v", path, err)
+		logger.Logger.Printf("Failed to open directory %s: %v", path, err)
 	}
 }
 
@@ -169,7 +169,7 @@ func readIcon(name string) []byte {
 
 	data, err := icons.ReadFile("icons/" + name + ext)
 	if err != nil {
-		logger.ErrLogger.Printf("Failed to read icon %s: %s", name+ext, err)
+		logger.Logger.Printf("Failed to read icon %s: %s", name+ext, err)
 		return nil
 	}
 
@@ -211,7 +211,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
 			if img != nil && img.Audio != nil {
 				if err := img.Audio.Play(); err != nil {
-					logger.ErrLogger.Printf("Failed to play audio: %v", err)
+					logger.Logger.Printf("Failed to play audio: %v", err)
 				}
 			}
 			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mSpeak, mQuit)
@@ -232,7 +232,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			types.DaySixDaysAgo:            mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
 			types.DaySevenDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
 		}, cfg, func(c *Config) types.Day { return c.Day }, func(c *Config, d types.Day) {
-			logger.InfoLogger.Printf("Setting Day: %v", d)
+			logger.Logger.Printf("Setting Day: %v", d)
 			c.Day = d
 		})
 
@@ -253,7 +253,7 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			types.RegionUnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "British region", false),
 			types.RegionUnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "US region", false),
 		}, cfg, func(c *Config) types.Region { return c.Region }, func(c *Config, r types.Region) {
-			logger.InfoLogger.Printf("Setting Region: %v", r)
+			logger.Logger.Printf("Setting Region: %v", r)
 			c.Region = r
 		})
 
@@ -263,49 +263,49 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			types.HighDefinition:      mConfigResolution.AddSubMenuItemCheckbox("High Definition", "High Definition resolution", false),
 			types.UltraHighDefinition: mConfigResolution.AddSubMenuItemCheckbox("Ultra High Definition", "Ultra High Definition resolution", false),
 		}, cfg, func(c *Config) types.Resolution { return c.Resolution }, func(c *Config, r types.Resolution) {
-			logger.InfoLogger.Printf("Setting Resolution: %v", r)
+			logger.Logger.Printf("Setting Resolution: %v", r)
 			c.Resolution = r
 		})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw Description", "Draw the wallpaper description", false), cfg,
 			func(c *Config) bool { return c.DrawDescription },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting DrawDescription: %v", b)
+				logger.Logger.Printf("Setting DrawDescription: %v", b)
 				c.DrawDescription = b
 			})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw QR Code", "Draw the QR code", false), cfg,
 			func(c *Config) bool { return c.DrawQRCode },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting DrawQRCode: %v", b)
+				logger.Logger.Printf("Setting DrawQRCode: %v", b)
 				c.DrawQRCode = b
 			})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Download Only", "Download the wallpaper only", false), cfg,
 			func(c *Config) bool { return c.DownloadOnly },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting DownloadOnly: %v", b)
+				logger.Logger.Printf("Setting DownloadOnly: %v", b)
 				c.DownloadOnly = b
 			})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Rotate Wallpaper counter clockwise", "Rotate the wallpaper counter clockwise", false), cfg,
 			func(c *Config) bool { return c.RotateCounterClockwise },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting RotateWallpaper: %v", b)
+				logger.Logger.Printf("Setting RotateWallpaper: %v", b)
 				c.RotateCounterClockwise = b
 			})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Text2Speech Service", "Use Google Text2Speech Service", false), cfg,
 			func(c *Config) bool { return c.UseGoogleText2SpeechService },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting UseGoogleText2SpeechService: %v", b)
+				logger.Logger.Printf("Setting UseGoogleText2SpeechService: %v", b)
 				c.UseGoogleText2SpeechService = b
 			})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Translate Service", "Use Google Translate Service", false), cfg,
 			func(c *Config) bool { return c.UseGoogleTranslateService },
 			func(c *Config, b bool) {
-				logger.InfoLogger.Printf("Setting UseGoogleTranslateService: %v", b)
+				logger.Logger.Printf("Setting UseGoogleTranslateService: %v", b)
 				c.UseGoogleTranslateService = b
 			})
 

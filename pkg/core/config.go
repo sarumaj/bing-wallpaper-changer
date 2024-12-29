@@ -21,4 +21,5 @@ type Config struct {
 	UseGoogleText2SpeechService bool             `json:"useGoogleText2SpeechService"`
 	UseGoogleTranslateService   bool             `json:"useGoogleTranslateService"`
 	Daemon                      bool             `json:"daemon"`
+	Debug                       bool             `json:"debug"`
 }

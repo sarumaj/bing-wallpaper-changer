@@ -72,7 +72,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 		var err error
 		r, err = fsys.Open(filepath.ToSlash(filepath.Join(path, file.Name())))
 		if err != nil {
-			logger.ErrLogger.Panicln(err)
+			logger.Logger.Panicln(err)
 		}
 
 		defer r.Close()
@@ -80,7 +80,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 		if filepath.Ext(file.Name()) == ".gz" {
 			r, err = gzip.NewReader(r)
 			if err != nil {
-				logger.ErrLogger.Panicln(err)
+				logger.Logger.Panicln(err)
 			}
 
 			defer r.Close()
@@ -88,7 +88,7 @@ func getEmbedded(fsys embed.FS, path string) Embedded {
 
 		raw, err := io.ReadAll(r)
 		if err != nil {
-			logger.ErrLogger.Panicln(err)
+			logger.Logger.Panicln(err)
 		}
 
 		m[strings.TrimSuffix(file.Name(), ".gz")] = &multiReadReader{data: raw}
