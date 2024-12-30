@@ -19,6 +19,12 @@ import (
 	"github.com/sarumaj/wallpaper"
 )
 
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	background, err := wallpaper.Get()
 	check(err)

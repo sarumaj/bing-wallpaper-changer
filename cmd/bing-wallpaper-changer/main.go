@@ -22,7 +22,7 @@ const remoteRepository = "sarumaj/bing-wallpaper-changer"
 var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.1.1"
+var Version = "v1.1.2"
 
 func main() {
 	var config core.Config

@@ -7,12 +7,30 @@ import (
 	"bufio"
 	"errors"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
+
+func (mode Mode) getKDEString() string {
+	str, ok := map[Mode]string{
+		Center:  "6",
+		Crop:    "2",
+		Fit:     "1",
+		Span:    "2",
+		Stretch: "0",
+		Tile:    "3",
+	}[mode]
+	if !ok {
+		panic("invalid wallpaper mode")
+	}
+	return str
+}
+
+func evalKDE(script string) error {
+	return execCmd("qdbus", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell.evaluateScript", script)
+}
 
 func getKDE() (string, error) {
 	usr, err := user.Current()
@@ -29,18 +47,12 @@ func getKDE() (string, error) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
-		if len(line) >= 6 && line[:6] == "Image=" {
-			return strings.TrimSpace(removeProtocol(line[6:])), nil
+		if line := scanner.Text(); strings.HasPrefix(line, "Image=") {
+			return strings.TrimSpace(removeProtocol(strings.TrimPrefix(line, "Image="))), nil
 		}
 	}
 	if scanner.Err() != nil {
 		return "", scanner.Err()
-	}
-
-	err = file.Close()
-	if err != nil {
-		return "", err
 	}
 
 	return "", errors.New("kde image not found")
@@ -62,27 +74,4 @@ func setKDEMode(mode Mode) error {
 			desktop.writeConfig("FillMode", ` + mode.getKDEString() + `)
 		}
 	`)
-}
-
-func evalKDE(script string) error {
-	return exec.Command("qdbus", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell.evaluateScript", script).Run()
-}
-
-func (mode Mode) getKDEString() string {
-	switch mode {
-	case Center:
-		return "6"
-	case Crop:
-		return "2"
-	case Fit:
-		return "1"
-	case Span:
-		return "2"
-	case Stretch:
-		return "0"
-	case Tile:
-		return "3"
-	default:
-		panic("invalid walllpaper mode")
-	}
 }

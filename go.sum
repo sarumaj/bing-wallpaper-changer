@@ -101,8 +101,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sarumaj/go-kakasi v1.0.3 h1:EkiT1M/ylYX9HNaPKPSIK4J7tgcpqOsItrGzFFVZ1dM=
 github.com/sarumaj/go-kakasi v1.0.3/go.mod h1:XY5mNBU3Lbnu3MWrHu0B5d8nWGqd8wPLYoyTpzLIhMM=
-github.com/sarumaj/go-wallpaper v0.0.0-20241229204308-f1e2d5b2765d h1:rEOVw4sMEoEDUO60j6pjxd2xFWBsQCSGg60PmfHrn+A=
-github.com/sarumaj/go-wallpaper v0.0.0-20241229204308-f1e2d5b2765d/go.mod h1:VEkQtqJzKqpNIXEUaJFgKhptjpMfckyU90pdi+TXVFM=
+github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3 h1:LRXv2VU2v7Iy3U5kO3iGeKSBG+Qr5dIxqHI7+624BBo=
+github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3/go.mod h1:VEkQtqJzKqpNIXEUaJFgKhptjpMfckyU90pdi+TXVFM=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=

@@ -7,6 +7,21 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
+func (mode Mode) getLXDEString() string {
+	str, ok := map[Mode]string{
+		Center:  "center",
+		Crop:    "crop",
+		Fit:     "fit",
+		Span:    "screen",
+		Stretch: "stretch",
+		Tile:    "tile",
+	}[mode]
+	if !ok {
+		panic("invalid wallpaper mode")
+	}
+	return str
+}
+
 func getLXDE() (string, error) {
 	usr, err := user.Current()
 	if err != nil {
@@ -26,24 +41,6 @@ func getLXDE() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return key.String(), err
-}
 
-func (mode Mode) getLXDEString() string {
-	switch mode {
-	case Center:
-		return "center"
-	case Crop:
-		return "crop"
-	case Fit:
-		return "fit"
-	case Span:
-		return "screen"
-	case Stretch:
-		return "stretch"
-	case Tile:
-		return "tile"
-	default:
-		panic("invalid wallpaper mode")
-	}
+	return key.String(), err
 }

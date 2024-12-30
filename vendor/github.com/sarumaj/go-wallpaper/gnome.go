@@ -8,6 +8,21 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+func (mode Mode) getGNOMEString() string {
+	str, ok := map[Mode]string{
+		Center:  "centered",
+		Crop:    "zoom",
+		Fit:     "scaled",
+		Span:    "spanned",
+		Stretch: "stretched",
+		Tile:    "wallpaper",
+	}[mode]
+	if !ok {
+		panic("invalid wallpaper mode")
+	}
+	return str
+}
+
 func getGNOME() (string, error) {
 	style, err := parseDconf("dconf", "read", "/org/gnome/desktop/interface/color-scheme")
 	if err != nil {
@@ -21,28 +36,8 @@ func getGNOME() (string, error) {
 	return parseDconf("dconf", "read", "/org/gnome/desktop/background/picture-uri")
 }
 
-func setGNOME(path string) error {
-	style, err := parseDconf("dconf", "read", "/org/gnome/desktop/interface/color-scheme")
-	if err != nil {
-		return err
-	}
-
-	if style == "prefer-dark" {
-		return exec.Command("dconf", "write", "/org/gnome/desktop/background/picture-uri-dark", strconv.Quote("file://"+path)).Run()
-	}
-
-	return exec.Command("dconf", "write", "/org/gnome/desktop/background/picture-uri", strconv.Quote("file://"+path)).Run()
-}
-
-func setGNOMEMode(mode Mode) error {
-	return exec.Command("dconf", "write", "/org/gnome/desktop/background/picture-options", strconv.Quote(mode.getGNOMEString())).Run()
-}
-
-func removeProtocol(input string) string {
-	if len(input) >= 7 && input[:7] == "file://" {
-		return input[7:]
-	}
-	return input
+func isGNOMECompliant() bool {
+	return strings.Contains(Desktop, "GNOME") || Desktop == "Unity" || Desktop == "Pantheon"
 }
 
 func parseDconf(command string, args ...string) (string, error) {
@@ -62,25 +57,18 @@ func parseDconf(command string, args ...string) (string, error) {
 	return removeProtocol(unquoted), nil
 }
 
-func isGNOMECompliant() bool {
-	return strings.Contains(Desktop, "GNOME") || Desktop == "Unity" || Desktop == "Pantheon"
+func removeProtocol(input string) string {
+	return strings.TrimPrefix(input, "file://")
 }
 
-func (mode Mode) getGNOMEString() string {
-	switch mode {
-	case Center:
-		return "centered"
-	case Crop:
-		return "zoom"
-	case Fit:
-		return "scaled"
-	case Span:
-		return "spanned"
-	case Stretch:
-		return "stretched"
-	case Tile:
-		return "wallpaper"
-	default:
-		panic("invalid wallpaper mode")
+func setGNOME(path string) error {
+	if err := execCmd("dconf", "write", "/org/gnome/desktop/background/picture-uri", strconv.Quote("file://"+path)); err != nil {
+		return err
 	}
+
+	return execCmd("dconf", "write", "/org/gnome/desktop/background/picture-uri-dark", strconv.Quote("file://"+path))
+}
+
+func setGNOMEMode(mode Mode) error {
+	return execCmd("dconf", "write", "/org/gnome/desktop/background/picture-options", strconv.Quote(mode.getGNOMEString()))
 }

@@ -11,6 +11,15 @@ import (
 	"strings"
 )
 
+func getCacheDir() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(usr.HomeDir, "Library", "Caches"), nil
+}
+
 // Get returns the path to the current wallpaper.
 func Get() (string, error) {
 	stdout, err := exec.Command("osascript", "-e", `tell application "Finder" to get POSIX path of (get desktop picture as alias)`).Output()
@@ -30,19 +39,10 @@ func SetFromFile(file string, desktop ...int) error {
 		cmd = `tell application "System Events" to tell desktop ` + strconv.Itoa(desktop[0]) + ` to set picture to ` + strconv.Quote(file)
 	}
 
-	return exec.Command("osascript", "-e", cmd).Run()
+	return execCmd("osascript", "-e", cmd)
 }
 
 // SetMode does nothing on macOS.
 func SetMode(mode Mode) error {
 	return nil
-}
-
-func getCacheDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(usr.HomeDir, "Library", "Caches"), nil
 }

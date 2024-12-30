@@ -30,6 +30,10 @@ var (
 	systemParametersInfo = user32.NewProc("SystemParametersInfoW")
 )
 
+func getCacheDir() (string, error) {
+	return os.TempDir(), nil
+}
+
 // Get returns the current wallpaper.
 func Get() (string, error) {
 	// the maximum length of a windows path is 256 utf16 characters
@@ -68,34 +72,22 @@ func SetMode(mode Mode) error {
 	}
 	defer key.Close()
 
-	var tile string
-	if mode == Tile {
-		tile = "1"
-	} else {
-		tile = "0"
-	}
-	err = key.SetStringValue("TileWallpaper", tile)
-	if err != nil {
+	if err := key.SetStringValue("TileWallpaper", map[bool]string{true: "1", false: "0"}[mode == Tile]); err != nil {
 		return err
 	}
 
-	var style string
-	switch mode {
-	case Center, Tile:
-		style = "0"
-	case Fit:
-		style = "6"
-	case Span:
-		style = "22"
-	case Stretch:
-		style = "2"
-	case Crop:
-		style = "10"
-	default:
+	style, ok := map[Mode]string{
+		Center:  "0",
+		Fit:     "6",
+		Span:    "22",
+		Stretch: "2",
+		Crop:    "10",
+	}[mode]
+	if !ok {
 		panic("invalid wallpaper mode")
 	}
-	err = key.SetStringValue("WallpaperStyle", style)
-	if err != nil {
+
+	if err := key.SetStringValue("WallpaperStyle", style); err != nil {
 		return err
 	}
 
@@ -106,8 +98,4 @@ func SetMode(mode Mode) error {
 	}
 
 	return SetFromFile(path)
-}
-
-func getCacheDir() (string, error) {
-	return os.TempDir(), nil
 }

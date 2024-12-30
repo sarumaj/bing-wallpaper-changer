@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/sarumaj/go-kakasi v1.0.3
-	github.com/sarumaj/go-wallpaper v0.0.0-20241229204308-f1e2d5b2765d
+	github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.5
 	github.com/tidwall/gjson v1.18.0
