@@ -65,9 +65,10 @@ var client = func() *retryablehttp.Client {
 		return nil
 	}
 
+	client.HTTPClient.Timeout = time.Second * 5
 	client.RetryWaitMax = time.Millisecond * 1500
 	client.RetryWaitMin = time.Millisecond * 500
-	client.RetryMax = 100
+	client.RetryMax = 10
 	client.Logger = logger.Logger
 
 	// random backoff
@@ -76,6 +77,10 @@ var client = func() *retryablehttp.Client {
 	}
 
 	client.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+		if err != nil {
+			return false, err
+		}
+
 		var buffer bytes.Buffer
 		if _, err := io.Copy(&buffer, resp.Body); err != nil {
 			return true, err
@@ -120,7 +125,9 @@ func furiganizeGooLabsApi(description string) (string, error) {
 		},
 	))
 	if err != nil {
-		return "", err
+		logger.Logger.Printf("Failed to request furigana conversion: %v\n", err)
+		logger.Logger.Println("Using go-kakasi for Furigana conversion")
+		return furiganizeKakasi(description)
 	}
 
 	// tokens are kanji sequences enclosed in square brackets.
@@ -254,12 +261,13 @@ func translateDescription(description string, source, target string) (string, er
 	logger.Logger.Println("Using Google Translation service location:", location)
 
 	result, err := client.TranslateText(ctx, &translatepb.TranslateTextRequest{
-		Contents:           []string{description},
-		MimeType:           "text/plain",
-		SourceLanguageCode: source,
-		TargetLanguageCode: target,
-		Parent:             location,
-		Labels:             map[string]string{"requestor": "bing-wallpaper-changer"},
+		Contents:              []string{description},
+		MimeType:              "text/plain",
+		SourceLanguageCode:    source,
+		TargetLanguageCode:    target,
+		Parent:                location,
+		Labels:                map[string]string{"requestor": "bing-wallpaper-changer"},
+		TransliterationConfig: &translatepb.TransliterationConfig{},
 	})
 	if err != nil {
 		return "", err
