@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	cloud.google.com/go/texttospeech v1.10.1
 	cloud.google.com/go/translate v1.12.3
+	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
 	github.com/creativeprojects/go-selfupdate v1.4.0
@@ -20,6 +21,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	golang.design/x/clipboard v0.7.0
 	golang.org/x/image v0.23.0
+	golang.org/x/net v0.34.0
 	google.golang.org/api v0.215.0
 )
 
@@ -31,6 +33,7 @@ require (
 	cloud.google.com/go/longrunning v0.6.2 // indirect
 	code.gitea.io/sdk/gitea v0.19.0 // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
@@ -65,13 +68,12 @@ require (
 	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
 	golang.org/x/mobile v0.0.0-20230301163155-e0f57694e12c // indirect
-	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.24.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect

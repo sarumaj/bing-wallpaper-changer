@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -25,13 +26,10 @@ func getHandler(t testing.TB, filename string) http.HandlerFunc {
 	t.Helper()
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		switch filepath.Ext(filename) {
-		case ".json":
-			w.Header().Set("Content-Type", "application/json")
-		case ".jpg":
-			w.Header().Set("Content-Type", "image/jpeg")
-		default:
-			t.Fatalf("unknown file extension: %s", filepath.Ext(filename))
+		if ct := mime.TypeByExtension(filepath.Ext(filename)); ct != "" {
+			w.Header().Set("Content-Type", ct)
+		} else {
+			w.Header().Set("Content-Type", "application/octet-stream")
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -67,30 +65,32 @@ func FromMock(t testing.TB) bool {
 func MockServers(t testing.TB) {
 	t.Helper()
 
-	bingServerMux := http.NewServeMux()
-	bingServerMux.Handle("/HPImageArchive.aspx", getHandler(t, "bing.json"))
-	bingServerMux.Handle("/th", getHandler(t, "bing.jpg"))
+	serveMux := http.NewServeMux()
+	serveMux.Handle("/HPImageArchive.aspx", getHandler(t, "bing.json"))
+	serveMux.Handle("/th", getHandler(t, "bing.jpg"))
+	serveMux.Handle("/api/hiragana", getHandler(t, "hiragana.json"))
+	serveMux.Handle("/search/", getHandler(t, "jisho.html"))
+	server := httptest.NewServer(serveMux)
 
-	bingServer := httptest.NewServer(bingServerMux)
+	backupCfg := crawlerConfig{
+		bingUrl:          cfg.bingUrl,
+		furiganaApiUrl:   cfg.furiganaApiUrl,
+		furiganaApiAppId: cfg.furiganaApiAppId,
+		jishoOrgUrl:      cfg.jishoOrgUrl,
+	}
 
-	oldBing := cfg.bingUrl
-	cfg.bingUrl = bingServer.URL
-
-	furiganaApiServerMux := http.NewServeMux()
-	furiganaApiServerMux.Handle("/api/hiragana", getHandler(t, "hiragana.json"))
-	furiganaApiServer := httptest.NewServer(furiganaApiServerMux)
-
-	oldHiraganaApi := cfg.furiganaApiUrl
-	oldHiraganaApiAppId := cfg.furiganaApiAppId
-	cfg.furiganaApiUrl = furiganaApiServer.URL
+	cfg.bingUrl = server.URL
+	cfg.furiganaApiUrl = server.URL
 	cfg.furiganaApiAppId = "test"
+	cfg.jishoOrgUrl = server.URL
 
 	t.Cleanup(func() {
-		bingServer.Close()
-		furiganaApiServer.Close()
-		cfg.bingUrl = oldBing
-		cfg.furiganaApiUrl = oldHiraganaApi
-		cfg.furiganaApiAppId = oldHiraganaApiAppId
+		server.Close()
+
+		cfg.bingUrl = backupCfg.bingUrl
+		cfg.furiganaApiUrl = backupCfg.furiganaApiUrl
+		cfg.furiganaApiAppId = backupCfg.furiganaApiAppId
+		cfg.jishoOrgUrl = backupCfg.jishoOrgUrl
 	})
 }
 

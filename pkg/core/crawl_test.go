@@ -23,7 +23,7 @@ func Test_furiganizeGooLabsApi(t *testing.T) {
 		{"test#1", "今日はダーウィンの日, ガラパゴスゾウガメ", "今日[きょう]はダーウィンの日[ひ], ガラパゴスゾウガメ"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := furiganizeGooLabsApi(tt.args)
+			got, err := furiganizeByGooLabsApi(tt.args)
 			if err != nil {
 				t.Errorf("furiganizeGooLabsApi() error = %v, wantErr %v", err, false)
 				return
@@ -31,6 +31,32 @@ func Test_furiganizeGooLabsApi(t *testing.T) {
 
 			if got != tt.want {
 				t.Errorf("furiganizeGooLabsApi() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_furiganizeByJishoOrg(t *testing.T) {
+	if FromMock(t) {
+		MockServers(t)
+	}
+
+	for _, tt := range []struct {
+		name string
+		args string
+		want string
+	}{
+		{"test#1", "今日はダーウィンの日, ガラパゴスゾウガメ", "今日[きょう]はダーウィンの日[ひ], ガラパゴスゾウガメ"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := furiganizeByJishoOrg(tt.args)
+			if err != nil {
+				t.Errorf("furiganizeByJishoOrg() error = %v, wantErr %v", err, false)
+				return
+			}
+
+			if got != tt.want {
+				t.Errorf("furiganizeByJishoOrg() = %v, want %v", got, tt.want)
 			}
 		})
 	}

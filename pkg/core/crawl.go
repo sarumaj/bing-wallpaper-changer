@@ -19,26 +19,30 @@ import (
 	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	translate "cloud.google.com/go/translate/apiv3"
 	"cloud.google.com/go/translate/apiv3/translatepb"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/corpix/uarand"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/logger"
 	"github.com/sarumaj/bing-wallpaper-changer/pkg/types"
 	"github.com/sarumaj/go-kakasi"
 	"github.com/tidwall/gjson"
+	"golang.org/x/net/html/charset"
 	"google.golang.org/api/option"
 )
 
 const (
 	defaultBingUrl        = "https://www.bing.com"
 	defaultFuriganaApiUrl = "https://labs.goo.ne.jp"
+	defaultJishoOrgUrl    = "https://jisho.org"
 )
 
 type (
 	crawlerConfig struct {
 		bingUrl                     string
-		googleAppCredentials        string
 		furiganaApiAppId            string
 		furiganaApiUrl              string
+		googleAppCredentials        string
+		jishoOrgUrl                 string
 		useGoogleText2SpeechService bool
 		useGoogleTranslateService   bool
 	}
@@ -50,6 +54,7 @@ type (
 var cfg = crawlerConfig{
 	bingUrl:        defaultBingUrl,
 	furiganaApiUrl: defaultFuriganaApiUrl,
+	jishoOrgUrl:    defaultJishoOrgUrl,
 }
 
 // retryablehttp client configuration.
@@ -97,10 +102,10 @@ var client = func() *retryablehttp.Client {
 	return client
 }()
 
-// furiganizeGooLabsApi annotates the description in Japanese with Furigana for Kanji sequences.
+// furiganizeByGooLabsApi annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the Goo Labs API to convert Kanji to Furigana.
-func furiganizeGooLabsApi(description string) (string, error) {
-	// select kanji sequences from the description.
+func furiganizeByGooLabsApi(description string) (string, error) {
+	// select Kanji sequences from the description.
 	var kanji []rune
 	for _, r := range description {
 		if unicode.IsOneOf([]*unicode.RangeTable{unicode.Ideographic}, r) {
@@ -125,9 +130,7 @@ func furiganizeGooLabsApi(description string) (string, error) {
 		},
 	))
 	if err != nil {
-		logger.Logger.Printf("Failed to request furigana conversion: %v\n", err)
-		logger.Logger.Println("Using go-kakasi for Furigana conversion")
-		return furiganizeKakasi(description)
+		return "", err
 	}
 
 	// tokens are kanji sequences enclosed in square brackets.
@@ -148,9 +151,65 @@ func furiganizeGooLabsApi(description string) (string, error) {
 	return strings.NewReplacer(replacements...).Replace(description), nil
 }
 
-// furiganizeKakasi annotates the description in Japanese with Furigana for Kanji sequences.
+// furiganizeByJishoOrg annotates the description in Japanese with Furigana for Kanji sequences.
+// It uses the Jisho.org site to convert Kanji to Furigana.
+func furiganizeByJishoOrg(description string) (string, error) {
+	// select Japanese symbols from the description.
+	var symbols []rune
+	for _, r := range description {
+		if unicode.IsOneOf([]*unicode.RangeTable{
+			unicode.Hiragana,
+			unicode.Katakana,
+			unicode.Ideographic,
+			unicode.Punct,
+		}, r) {
+			symbols = append(symbols, r)
+		}
+	}
+
+	logger.Logger.Debug("Requesting Jisho.org for furigana annotations:", string(symbols))
+
+	// request Jisho.org for furigana annotations.
+	resp, err := client.Get(cfg.jishoOrgUrl + "/search/" + url.QueryEscape(string(symbols)))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		req, _ := httputil.DumpRequestOut(resp.Request, true)
+		dump, _ := httputil.DumpResponse(resp, true)
+		return "", fmt.Errorf("unexpected status code: %d\n(%s)\n(%s)", resp.StatusCode, req, dump)
+	}
+
+	// sniff charset encoding and create a reader.
+	reader, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+	if err != nil {
+		return "", err
+	}
+
+	document, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		return "", err
+	}
+
+	// scrap the furigana annotations.
+	var replacements []string
+	document.Find("#zen_bar").Each(func(_ int, section *goquery.Selection) {
+		section.Find(".japanese_word__furigana").Each(func(_ int, span *goquery.Selection) {
+			if original, ok := span.Attr("data-text"); ok && len(original) > 0 {
+				replacements = append(replacements, original, fmt.Sprintf("%s[%s]", original, span.Text()))
+			}
+		})
+	})
+
+	logger.Logger.Debug("Furigana annotations found:", replacements)
+	return strings.NewReplacer(replacements...).Replace(description), nil
+}
+
+// furiganizeByKakasi annotates the description in Japanese with Furigana for Kanji sequences.
 // It uses the kakasi NLP library to convert Kanji to Furigana.
-func furiganizeKakasi(description string) (string, error) {
+func furiganizeByKakasi(description string) (string, error) {
 	k, err := kakasi.NewKakasi()
 	if err != nil {
 		return "", err
@@ -346,16 +405,21 @@ func DownloadAndDecode(day types.Day, region types.Region, resolution types.Reso
 	}
 
 	if region == types.RegionJapan {
-		var fn func(string) (string, error)
+		var annotated string
+		var err error
 		if cfg.furiganaApiAppId != "" {
 			logger.Logger.Println("Using Goo Labs API for Furigana conversion")
-			fn = furiganizeGooLabsApi
+			annotated, err = furiganizeByGooLabsApi(description)
 		} else {
-			logger.Logger.Println("Using go-kakasi for Furigana conversion")
-			fn = furiganizeKakasi
+			logger.Logger.Println("Using Jisho.org for Furigana conversion")
+			annotated, err = furiganizeByJishoOrg(description)
 		}
 
-		annotated, err := fn(description)
+		if err != nil {
+			logger.Logger.Printf("failed to annotate description: %v, falling back to Kakasi\n", err)
+			annotated, err = furiganizeByKakasi(description)
+		}
+
 		if err != nil {
 			logger.Logger.Printf("failed to annotate description: %v\n", err)
 		} else {
