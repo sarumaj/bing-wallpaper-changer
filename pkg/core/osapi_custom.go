@@ -223,17 +223,30 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		mConfig := systray.AddMenuItem("Configure", "Configure the wallpaper settings")
 		mConfigDay := mConfig.AddSubMenuItem("Day", "Day of the Bing wallpaper")
 		makeConfigSection(map[types.Day]*systray.MenuItem{
-			types.DayToday:                 mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
-			types.DayYesterday:             mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
-			types.DayTheDayBeforeYesterday: mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
-			types.DayThreeDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
-			types.DayFourDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
-			types.DayFiveDaysAgo:           mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
-			types.DaySixDaysAgo:            mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
-			types.DaySevenDaysAgo:          mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
-		}, cfg, func(c *Config) types.Day { return c.Day }, func(c *Config, d types.Day) {
+			types.DayToday: mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
+			types.Day1Ago:  mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
+			types.Day2Ago:  mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
+			types.Day3Ago:  mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
+			types.Day4Ago:  mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
+			types.Day5Ago:  mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
+			types.Day6Ago:  mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
+			types.Day7Ago:  mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
+		}, cfg, func(c *Config) types.Day { return c.Day.Value() }, func(c *Config, d types.Day) {
 			logger.Logger.Printf("Setting Day: %v", d)
-			c.Day = d
+			c.Day.SetDefault(d)
+		})
+
+		mConfigMode := mConfig.AddSubMenuItem("Mode", "Define how the wallpaper is set")
+		makeConfigSection(map[Mode]*systray.MenuItem{
+			ModeCenter:  mConfigMode.AddSubMenuItemCheckbox("Center", "Center mode", false),
+			ModeCrop:    mConfigMode.AddSubMenuItemCheckbox("Crop", "Crop mode", false),
+			ModeFit:     mConfigMode.AddSubMenuItemCheckbox("Fit", "Fit mode", false),
+			ModeSpan:    mConfigMode.AddSubMenuItemCheckbox("Span", "Span mode", false),
+			ModeStretch: mConfigMode.AddSubMenuItemCheckbox("Stretch", "Stretch mode", false),
+			ModeTile:    mConfigMode.AddSubMenuItemCheckbox("Tile", "Tile mode", false),
+		}, cfg, func(c *Config) Mode { return c.Mode.Value() }, func(c *Config, m Mode) {
+			logger.Logger.Printf("Setting Mode: %v", m)
+			c.Mode.SetDefault(m)
 		})
 
 		mConfigRegion := mConfig.AddSubMenuItem("Region", "Region of the Bing wallpaper")
@@ -252,9 +265,9 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			types.RegionSpain:         mConfigRegion.AddSubMenuItemCheckbox("Spain", "Spanish region", false),
 			types.RegionUnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "British region", false),
 			types.RegionUnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "US region", false),
-		}, cfg, func(c *Config) types.Region { return c.Region }, func(c *Config, r types.Region) {
+		}, cfg, func(c *Config) types.Region { return c.Region.Value() }, func(c *Config, r types.Region) {
 			logger.Logger.Printf("Setting Region: %v", r)
-			c.Region = r
+			c.Region.SetDefault(r)
 		})
 
 		mConfigResolution := mConfig.AddSubMenuItem("Resolution", "Resolution of the wallpaper")
@@ -262,9 +275,9 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 			types.LowDefinition:       mConfigResolution.AddSubMenuItemCheckbox("Low Definition", "Low Definition resolution", false),
 			types.HighDefinition:      mConfigResolution.AddSubMenuItemCheckbox("High Definition", "High Definition resolution", false),
 			types.UltraHighDefinition: mConfigResolution.AddSubMenuItemCheckbox("Ultra High Definition", "Ultra High Definition resolution", false),
-		}, cfg, func(c *Config) types.Resolution { return c.Resolution }, func(c *Config, r types.Resolution) {
+		}, cfg, func(c *Config) types.Resolution { return c.Resolution.Value() }, func(c *Config, r types.Resolution) {
 			logger.Logger.Printf("Setting Resolution: %v", r)
-			c.Resolution = r
+			c.Resolution.SetDefault(r)
 		})
 
 		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw Description", "Draw the wallpaper description", false), cfg,

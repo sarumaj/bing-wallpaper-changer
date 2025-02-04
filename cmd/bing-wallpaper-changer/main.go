@@ -22,7 +22,7 @@ const remoteRepository = "sarumaj/bing-wallpaper-changer"
 var BuildDate = "2024-12-20 21:07:32 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.1.4"
+var Version = "v1.1.5"
 
 func main() {
 	var config core.Config
@@ -79,7 +79,7 @@ func checkVersionOrUpdate() {
 // execute fetches the wallpaper, processes it, and sets it as the desktop wallpaper.
 func execute(config *core.Config) *core.Image {
 	img, err := core.DownloadAndDecode(
-		config.Day, config.Region, config.Resolution,
+		config.Day.Value(), config.Region.Value(), config.Resolution.Value(),
 		core.WithFuriganaApiAppId(config.FuriganaApiAppId),
 		core.WithGoogleAppCredentials(config.GoogleAppCredentials),
 		core.WithUseGoogleText2SpeechService(config.UseGoogleText2SpeechService),
@@ -105,7 +105,7 @@ func execute(config *core.Config) *core.Image {
 	}
 
 	if config.DrawQRCode {
-		if err := img.DrawQRCode(config.Resolution, types.PositionTopRight); err != nil {
+		if err := img.DrawQRCode(config.Resolution.Value(), types.PositionTopRight); err != nil {
 			logger.Logger.Println(err)
 			return img
 		}
@@ -119,7 +119,7 @@ func execute(config *core.Config) *core.Image {
 
 	logger.Logger.Printf("Wallpaper saved to: %s", path)
 	if !config.DownloadOnly {
-		if err := core.SetWallpaper(path, core.ModeStretch); err != nil {
+		if err := core.SetWallpaper(path, config.Mode.Value()); err != nil {
 			logger.Logger.Println(err)
 			return img
 		}
@@ -143,9 +143,18 @@ func execute(config *core.Config) *core.Image {
 
 // parseArgs parses the command line arguments and sets the configuration accordingly.
 func parseArgs(config *core.Config, args ...string) {
-	var day int
-	var region string
-	var resolution string
+	config.Day.SetDefault(types.DayToday)
+	config.Day.SetValues(types.AllowedDays...)
+
+	config.Mode.SetDefault(core.ModeFit)
+	config.Mode.SetValues(core.AllowedModes...)
+
+	config.Region.SetDefault(types.RegionGermany)
+	config.Region.SetValues(types.AllowedRegions...)
+
+	config.Resolution.SetAlias(func(r types.Resolution) string { return r.Alias })
+	config.Resolution.SetDefault(types.HighDefinition)
+	config.Resolution.SetValues(types.AllowedResolutions...)
 
 	opts := pflag.NewFlagSet("bing-wallpaper-changer", pflag.ContinueOnError)
 	opts.Usage = func() {
@@ -158,9 +167,10 @@ func parseArgs(config *core.Config, args ...string) {
 	defaultDownloadDirectory, _ := os.UserHomeDir()
 	defaultDownloadDirectory += "/Pictures/BingWallpapers"
 
-	opts.IntVar(&day, "day", int(types.DayToday), "the day to fetch the wallpaper for, 0 is today, 1 is yesterday, and so on, 7 is the highest value, which is seven days ago")
-	opts.StringVar(&region, "region", types.RegionGermany.String(), fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", types.AllowedRegions))
-	opts.StringVar(&resolution, "resolution", types.HighDefinition.String(), fmt.Sprintf("the resolution of the wallpaper, allowed values are: %s", types.AllowedResolutions))
+	opts.Var(&config.Day, "day", fmt.Sprintf("the day to fetch the wallpaper for, allowed values are: %s", config.Day.Values()))
+	opts.Var(&config.Mode, "mode", fmt.Sprintf("the mode of the wallpaper, allowed values are: %s", config.Mode.Values()))
+	opts.Var(&config.Region, "region", fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", config.Region.Values()))
+	opts.Var(&config.Resolution, "resolution", fmt.Sprintf("the resolution of the wallpaper, allowed values are: %s", config.Resolution.Values()))
 	opts.BoolVar(&config.DrawDescription, "description", true, "draw the description on the wallpaper")
 	opts.BoolVar(&config.DrawQRCode, "qrcode", true, "draw the QR code on the wallpaper")
 	opts.StringVar(&config.Watermark, "watermark", extras.DefaultWatermarkName, "draw the watermark on the wallpaper")
@@ -184,24 +194,5 @@ func parseArgs(config *core.Config, args ...string) {
 	if config.Debug {
 		logger.Logger.SetLevel(logger.LogLevelDebug)
 		logger.Logger.SetLevel(logger.LogLevelDebug)
-	}
-
-	var err error
-	config.Region, err = types.ParseLocale(region)
-	if err != nil {
-		opts.Usage()
-		logger.Logger.Fatalln(err)
-	}
-
-	config.Day = types.Day(day)
-	if err := config.Day.IsValid(); err != nil {
-		opts.Usage()
-		logger.Logger.Fatalln(err)
-	}
-
-	config.Resolution, err = types.ParseResolution(resolution)
-	if err != nil {
-		opts.Usage()
-		logger.Logger.Fatalln(err)
 	}
 }

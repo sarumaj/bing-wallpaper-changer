@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -87,15 +86,4 @@ func (r Regions) String() string {
 	}
 
 	return strings.Join(s, ", ")
-}
-
-// ParseLocale parses a string and returns a Region.
-func ParseLocale(s string) (Region, error) {
-	for _, allowed := range AllowedRegions {
-		if s == allowed.String() {
-			return allowed, nil
-		}
-	}
-
-	return Region{}, fmt.Errorf("unsupported region: %s, expected any of: %s", s, AllowedRegions)
 }

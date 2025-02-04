@@ -19,6 +19,7 @@ type Resolution struct {
 	Alias         string
 }
 
+// BingFormat returns the Bing format of the Resolution.
 func (r Resolution) BingFormat() string {
 	switch r {
 	case UltraHighDefinition:
@@ -42,31 +43,7 @@ type Resolutions []Resolution
 func (r Resolutions) String() string {
 	var s []string
 	for _, v := range r {
-		s = append(s, v.String())
+		s = append(s, v.String()+" ("+v.Alias+")")
 	}
 	return strings.Join(s, ", ")
-}
-
-// ParseResolution parses a string and returns a Resolution.
-func ParseResolution(s string) (Resolution, error) {
-	defaultErr := fmt.Errorf("invalid resolution: %s, allowed values arr: %s", s, AllowedResolutions)
-
-	var r Resolution
-	_, err := fmt.Sscanf(s, "%dx%d", &r.Width, &r.Height)
-	for _, allowed := range AllowedResolutions {
-		switch {
-		case strings.EqualFold(s, allowed.Alias), r.Width == allowed.Width && r.Height == allowed.Height:
-			return Resolution{
-				Width:  allowed.Width,
-				Height: allowed.Height,
-				Alias:  allowed.Alias,
-			}, nil
-		}
-	}
-
-	if err != nil {
-		return r, defaultErr
-	}
-
-	return Resolution{}, defaultErr
 }
