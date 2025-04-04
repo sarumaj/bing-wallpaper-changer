@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/blang/semver"
 	"github.com/creativeprojects/go-selfupdate"
@@ -165,7 +166,7 @@ func parseArgs(config *core.Config, args ...string) {
 	}
 
 	defaultDownloadDirectory, _ := os.UserHomeDir()
-	defaultDownloadDirectory += "/Pictures/BingWallpapers"
+	defaultDownloadDirectory = filepath.Join(defaultDownloadDirectory, "Pictures", "BingWallpapers")
 
 	opts.Var(&config.Day, "day", fmt.Sprintf("the day to fetch the wallpaper for, allowed values are: %s", config.Day.Values()))
 	opts.Var(&config.Mode, "mode", fmt.Sprintf("the mode of the wallpaper, allowed values are: %s", config.Mode.Values()))
