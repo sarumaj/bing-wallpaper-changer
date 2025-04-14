@@ -35,7 +35,9 @@ Done just for fun 😄
 - [x] Draw watermarks
   - [x] Scale down/up to match the resolution of the wallpaper
   - [x] Rotate if necessary (only clockwise rotation by 90° supported)
+- [x] Dim wallpaper to enable dark-mode setting
 - [x] System tray interface (available on darwin and linux only if compiled with CGO)
+- [x] REST Interface to alter configuration programmatically (dark-mode setup via HTTP request)  
 
 ## Platform specific notes
 
