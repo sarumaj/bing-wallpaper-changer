@@ -20,10 +20,10 @@ import (
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2024-12-20 21:07:32 UTC"
+var BuildDate = "2025-04-14 23:47:51 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.1.5"
+var Version = "v1.1.7"
 
 func main() {
 	var config core.Config
@@ -135,7 +135,7 @@ func execute(config *core.Config) *core.Image {
 		logger.Logger.Printf("Wallpaper set to: %s", path)
 	}
 
-	if img.Audio == nil {
+	if img.Audio == nil || !config.AutoPlayAudio {
 		return img
 	}
 
@@ -175,6 +175,8 @@ func parseArgs(config *core.Config, args ...string) {
 	defaultDownloadDirectory, _ := os.UserHomeDir()
 	defaultDownloadDirectory = filepath.Join(defaultDownloadDirectory, "Pictures", "BingWallpapers")
 
+	opts.IntVar(&config.ApiPort, "api-port", 44244, "the port number of the API server")
+	opts.BoolVar(&config.AutoPlayAudio, "auto-play-audio", true, "auto play the audio description")
 	opts.Var(&config.Day, "day", fmt.Sprintf("the day to fetch the wallpaper for, allowed values are: %s", config.Day.Values()))
 	opts.Var(&config.Mode, "mode", fmt.Sprintf("the mode of the wallpaper, allowed values are: %s", config.Mode.Values()))
 	opts.Var(&config.Region, "region", fmt.Sprintf("the region to fetch the wallpaper for, allowed values are: %s", config.Region.Values()))
@@ -192,7 +194,6 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.BoolVar(&config.Daemon, "daemon", false, "run the application as a daemon process")
 	opts.BoolVar(&config.Debug, "debug", false, "enable debug mode")
 	opts.Var(&config.DimImage, "dim-image", "dim the image by the given percentage (0.0 to 100.0)")
-	opts.IntVar(&config.ApiPort, "api-port", 44244, "the port number of the API server")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {

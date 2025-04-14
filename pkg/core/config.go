@@ -8,6 +8,7 @@ const AppName = "Bing Wallpaper Changer"
 
 type Config struct {
 	ApiPort                     int                                             `json:"apiPort"`
+	AutoPlayAudio               bool                                            `json:"autoPlayAudio"`
 	Day                         types.Enum[types.Day, types.Days]               `json:"day"`
 	Mode                        types.Enum[Mode, Modes]                         `json:"mode"`
 	Region                      types.Enum[types.Region, types.Regions]         `json:"region"`

@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sync"
 
 	"github.com/energye/systray"
 	"github.com/pkg/browser"
@@ -27,16 +28,19 @@ var icons embed.FS
 
 var clipboardErr = clipboard.Init()
 
-// systrayController is the controller for the systray menu.
-type systrayController struct {
-	server  *Server
-	img     *Image
-	cfg     *Config
-	execute func(*Config) *Image
+// Controller is the controller of the application.
+type Controller struct {
+	img         *Image
+	cfg         *Config
+	execute     func(*Config) *Image
+	refreshLock sync.Mutex
 }
 
-// onReady initializes the systray menu.
-func (c *systrayController) onReady() {
+// OnReady initializes the application.
+func (c *Controller) OnReady() {
+	c.refreshLock.Lock()
+	defer c.refreshLock.Unlock()
+
 	// reset the menu
 	systray.ResetMenu()
 
@@ -55,7 +59,10 @@ func (c *systrayController) onReady() {
 	mRefresh.Click(func() {
 		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
 		mPropertiesAudio.Hide()
+		autoPlayAudio := c.cfg.AutoPlayAudio
+		c.cfg.AutoPlayAudio = false
 		c.img.Update(c.execute(c.cfg))
+		c.cfg.AutoPlayAudio = autoPlayAudio
 		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
 		if c.img != nil && c.img.Audio != nil {
 			mSpeak.Enable()
@@ -80,9 +87,9 @@ func (c *systrayController) onReady() {
 	apiMenu := systray.AddMenuItem("API", "API of the wallpaper")
 	serverAddr := fmt.Sprintf("localhost:%d", c.cfg.ApiPort)
 	apiMenuRetrieveConfig := apiMenu.AddSubMenuItem("Retrieve Config", "Retrieve the config")
-	makeApiCommand(apiMenuRetrieveConfig, serverAddr, http.MethodGet, "/config", "", false)
+	makeApiCommand(apiMenuRetrieveConfig, serverAddr, http.MethodGet, "/config", "", "")
 	apiMenuUpdateConfig := apiMenu.AddSubMenuItem("Update Config", "Update the config")
-	makeApiCommand(apiMenuUpdateConfig, serverAddr, http.MethodPatch, "/config", "refresh=true", true)
+	makeApiCommand(apiMenuUpdateConfig, serverAddr, http.MethodPatch, "/config", "refresh=true", "{...}")
 
 	systray.AddSeparator()
 
@@ -148,16 +155,13 @@ func (c *systrayController) onReady() {
 	})
 
 	mConfigDimImage := mConfig.AddSubMenuItem("Dim Image", "Dim the image")
-	makeConfigSection(map[types.Percent]*systray.MenuItem{
-		0.0:   mConfigDimImage.AddSubMenuItemCheckbox("0%", "0% dim", false),
-		20.0:  mConfigDimImage.AddSubMenuItemCheckbox("20%", "20% dim", false),
-		40.0:  mConfigDimImage.AddSubMenuItemCheckbox("40%", "40% dim", false),
-		60.0:  mConfigDimImage.AddSubMenuItemCheckbox("60%", "60% dim", false),
-		80.0:  mConfigDimImage.AddSubMenuItemCheckbox("80%", "80% dim", false),
-		100.0: mConfigDimImage.AddSubMenuItemCheckbox("100%", "100% dim", false),
-	}, c.cfg, func(c *Config) types.Percent {
-		// round to the nearest 20% to find the closest matching value
-		return types.Percent(math.Round(float64(c.DimImage)/20) * 20)
+	mConfigDimImageMap := make(map[types.Percent]*systray.MenuItem)
+	for i := 0; i <= 100; i += 10 {
+		mConfigDimImageMap[types.Percent(i)] = mConfigDimImage.AddSubMenuItemCheckbox(fmt.Sprintf("%d%%", i), fmt.Sprintf("%d%% dim", i), false)
+	}
+	makeConfigSection(mConfigDimImageMap, c.cfg, func(c *Config) types.Percent {
+		// round to the nearest 10% to find the closest matching value
+		return types.Percent(math.Round(float64(c.DimImage)/10) * 10)
 	}, func(c *Config, p types.Percent) {
 		logger.Logger.Printf("Setting DimImage: %v", p)
 		c.DimImage = p
@@ -281,16 +285,11 @@ func (c *systrayController) onReady() {
 	}
 }
 
-// onExit is called when the systray menu is closed.
-func (c *systrayController) onExit() {
+// OnExit is called when the application is closed.
+func (c *Controller) OnExit() {
 	// close the audio stream
 	if c.img != nil && c.img.Audio != nil {
 		_ = c.img.Audio.Close()
-	}
-
-	// stop the server
-	if c.server != nil {
-		_ = c.server.Stop()
 	}
 }
 
@@ -302,7 +301,7 @@ func modify(op func(*systray.MenuItem), items ...*systray.MenuItem) {
 }
 
 // makeApiCommand creates a menu item with a copy action
-func makeApiCommand(item *systray.MenuItem, addr, verb, path, query string, payload bool) {
+func makeApiCommand(item *systray.MenuItem, addr, verb, path, query, payload string) {
 	item.SetIcon(readIcon("copy"))
 	item.Click(func() {
 		if clipboardErr != nil {
@@ -316,8 +315,8 @@ func makeApiCommand(item *systray.MenuItem, addr, verb, path, query string, payl
 			RawQuery: query,
 		}
 		cmd := fmt.Sprintf("curl -X %s %s", verb, uri.String())
-		if payload {
-			cmd += " -d '{...}'"
+		if payload != "" {
+			cmd += " -d '" + payload + "'"
 		}
 		_ = clipboard.Write(clipboard.FmtText, []byte(cmd))
 	})
@@ -473,13 +472,17 @@ func readIcon(name string) []byte {
 func Run(execute func(*Config) *Image, cfg *Config) {
 	img := &Image{}
 	if !cfg.Daemon {
-		_ = execute(cfg)
+		img.Update(execute(cfg))
 		return
 	}
 
-	controller := &systrayController{img: img, cfg: cfg, execute: execute}
-	server := NewServer(cfg, img, execute, controller.onReady)
-	controller.server = server
+	controller := &Controller{img: img, cfg: cfg, execute: execute}
+	server := NewServer(cfg, controller)
+	defer func() {
+		if err := server.Stop(); err != nil {
+			logger.Logger.Printf("Failed to stop API server: %v", err)
+		}
+	}()
 
 	go func() {
 		if err := server.Start(); err != nil && err != http.ErrServerClosed {
@@ -487,5 +490,5 @@ func Run(execute func(*Config) *Image, cfg *Config) {
 		}
 	}()
 
-	systray.Run(controller.onReady, controller.onExit)
+	systray.Run(controller.OnReady, controller.OnExit)
 }
