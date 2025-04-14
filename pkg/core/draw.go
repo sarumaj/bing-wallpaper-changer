@@ -249,3 +249,29 @@ func (img *Image) DrawWatermark(watermarkFile string, rotateCounterClockwise boo
 	img.Image = ctx.Image()
 	return nil
 }
+
+// Dim dims the image by the specified percentage (0.0-100.0).
+func (img *Image) Dim(percentage types.Percent) error {
+	level := percentage.Float32()
+	if level < 0.0 || level > 100.0 {
+		return fmt.Errorf("percentage must be between 0.0 and 100.0, got %f", level)
+	}
+
+	imgBounds := img.Bounds()
+	ctx := gg.NewContextForRGBA(image.NewRGBA(imgBounds))
+
+	// Copy the original image
+	ctx.DrawImage(img.Image, 0, 0)
+
+	// Calculate alpha value for dimming (255 is fully opaque, 0 is fully transparent)
+	alpha := uint8((level * 255.0) / 100.0)
+
+	// Draw a semi-transparent black rectangle over the entire image
+	ctx.SetColor(color.RGBA{0, 0, 0, alpha})
+	ctx.DrawRectangle(0, 0, float64(imgBounds.Dx()), float64(imgBounds.Dy()))
+	ctx.Fill()
+
+	img.Image = ctx.Image()
+	img.DimmedPercent = level
+	return nil
+}

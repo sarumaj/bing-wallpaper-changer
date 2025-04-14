@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/pflag"
@@ -61,3 +62,44 @@ func (e Enum[K, L]) Value() K { return e.value }
 
 // Values returns the enum values.
 func (e Enum[K, L]) Values() L { return e.values }
+
+// MarshalJSON marshals the enum value to JSON.
+func (e Enum[K, L]) MarshalJSON() ([]byte, error) {
+	var aux = struct {
+		Value  K      `json:"value"`
+		Values L      `json:"values"`
+		Alias  string `json:"alias"`
+	}{
+		Value:  e.value,
+		Values: e.values,
+	}
+
+	if e.alias != nil {
+		aux.Alias = e.alias(e.value)
+	}
+
+	return json.Marshal(aux)
+}
+
+// UnmarshalJSON unmarshals the enum value from JSON.
+func (e *Enum[K, L]) UnmarshalJSON(data []byte) error {
+	var aux struct {
+		Value  K      `json:"value"`
+		Values L      `json:"values"`
+		Alias  string `json:"alias"`
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	e.value = aux.Value
+	e.values = aux.Values
+
+	if aux.Alias != "" {
+		e.alias = func(v K) string {
+			return aux.Alias
+		}
+	}
+
+	return nil
+}

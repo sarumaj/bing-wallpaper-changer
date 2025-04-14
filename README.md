@@ -37,6 +37,20 @@ Done just for fun 😄
   - [x] Rotate if necessary (only clockwise rotation by 90° supported)
 - [x] System tray interface (available on darwin and linux only if compiled with CGO)
 
+## Platform specific notes
+
+### Linux
+
+- Requires `libasound2-dev`, `libx11-dev` or `xorg-dev` or `libX11-devel` (on Ubuntu/Debian), `alsa-lib-devel` (on RedHat/Fedora)
+
+### Darwin
+
+- Requires CGO, `AudioToolbox.framework` (but it is automatically linked)
+
+### Windows
+
+- No additional requirements
+
 ## Usage
 
 ```console

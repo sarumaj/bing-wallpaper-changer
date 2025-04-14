@@ -110,3 +110,31 @@ func TestDrawWatermark(t *testing.T) {
 		})
 	}
 }
+
+func TestDimImage(t *testing.T) {
+	type args struct {
+		percentage types.Percent
+	}
+
+	for _, tt := range []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"test#1", args{50.0}, false},
+		{"test#2", args{0.0}, false},
+		{"test#3", args{100.0}, false},
+		{"test#4", args{25.5}, false},
+		{"test#5", args{-0.1}, true},
+		{"test#6", args{100.1}, true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := SetupTestImage(t)
+
+			err := got.Dim(tt.args.percentage)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Dim(%f) error = %v, wantErr %t", tt.args.percentage, err, tt.wantErr)
+			}
+		})
+	}
+}

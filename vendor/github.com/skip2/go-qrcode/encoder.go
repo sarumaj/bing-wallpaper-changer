@@ -196,7 +196,7 @@ func (d *dataEncoder) encode(data []byte) (*bitset.Bitset, error) {
 	}
 
 	if singleByteSegmentLength <= optimizedLength {
-		d.optimised = []segment{segment{dataMode: highestRequiredMode, data: d.data}}
+		d.optimised = []segment{{dataMode: highestRequiredMode, data: d.data}}
 	}
 
 	// Encode data.
@@ -406,10 +406,10 @@ func (d *dataEncoder) charCountBits(dataMode dataMode) int {
 // dataMode.
 //
 // The number of bits required is affected by:
-//	- QR code type - Mode Indicator length.
-//	- Data mode - number of bits used to represent data length.
-//	- Data mode - how the data is encoded.
-//	- Number of symbols encoded.
+//   - QR code type - Mode Indicator length.
+//   - Data mode - number of bits used to represent data length.
+//   - Data mode - how the data is encoded.
+//   - Number of symbols encoded.
 //
 // An error is returned if the mode is not supported, or the length requested is
 // too long to be represented.

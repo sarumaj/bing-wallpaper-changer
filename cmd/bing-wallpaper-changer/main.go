@@ -91,6 +91,13 @@ func execute(config *core.Config) *core.Image {
 		return nil
 	}
 
+	if config.DimImage > 0.0 {
+		if err := img.Dim(config.DimImage); err != nil {
+			logger.Logger.Println(err)
+			return img
+		}
+	}
+
 	if config.Watermark != "" {
 		if err := img.DrawWatermark(config.Watermark, config.RotateCounterClockwise); err != nil {
 			logger.Logger.Println(err)
@@ -184,6 +191,8 @@ func parseArgs(config *core.Config, args ...string) {
 	opts.BoolVar(&config.UseGoogleTranslateService, "use-google-translate-service", false, "use the Google Translate service to translate the description to English")
 	opts.BoolVar(&config.Daemon, "daemon", false, "run the application as a daemon process")
 	opts.BoolVar(&config.Debug, "debug", false, "enable debug mode")
+	opts.Var(&config.DimImage, "dim-image", "dim the image by the given percentage (0.0 to 100.0)")
+	opts.IntVar(&config.ApiPort, "api-port", 44244, "the port number of the API server")
 
 	if err := opts.Parse(args); err != nil {
 		if !errors.Is(err, pflag.ErrHelp) {

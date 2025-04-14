@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build darwin && (386 || amd64) && !ios
 // +build darwin
 // +build 386 amd64
 // +build !ios
@@ -412,6 +413,7 @@ func cocoaRune(r rune) rune {
 // into the standard keycodes used by the key package.
 //
 // To get a sense of the key map, see the diagram on
+//
 //	http://boredzo.org/blog/archives/2007-05-22/virtual-key-codes
 func cocoaKeyCode(vkcode uint16) key.Code {
 	switch vkcode {

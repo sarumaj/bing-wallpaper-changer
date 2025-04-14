@@ -7,6 +7,7 @@ import (
 const AppName = "Bing Wallpaper Changer"
 
 type Config struct {
+	ApiPort                     int                                             `json:"apiPort"`
 	Day                         types.Enum[types.Day, types.Days]               `json:"day"`
 	Mode                        types.Enum[Mode, Modes]                         `json:"mode"`
 	Region                      types.Enum[types.Region, types.Regions]         `json:"region"`
@@ -23,4 +24,5 @@ type Config struct {
 	UseGoogleTranslateService   bool                                            `json:"useGoogleTranslateService"`
 	Daemon                      bool                                            `json:"daemon"`
 	Debug                       bool                                            `json:"debug"`
+	DimImage                    types.Percent                                   `json:"dimImage"`
 }

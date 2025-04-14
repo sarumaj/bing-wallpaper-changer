@@ -241,7 +241,7 @@ func (p *Properties) Introspection(iface string) []introspect.Property {
 		}
 		p.Annotations = []introspect.Annotation{
 			{
-				Name: "org.freedesktop.DBus.Property.EmitsChangedSignal",
+				Name:  "org.freedesktop.DBus.Property.EmitsChangedSignal",
 				Value: v.Emit.String(),
 			},
 		}

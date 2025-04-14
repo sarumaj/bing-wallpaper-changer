@@ -5,7 +5,11 @@ package core
 import (
 	"bytes"
 	"embed"
+	"fmt"
 	"image/png"
+	"math"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -23,11 +27,300 @@ var icons embed.FS
 
 var clipboardErr = clipboard.Init()
 
+// systrayController is the controller for the systray menu.
+type systrayController struct {
+	server  *Server
+	img     *Image
+	cfg     *Config
+	execute func(*Config) *Image
+}
+
+// onReady initializes the systray menu.
+func (c *systrayController) onReady() {
+	// reset the menu
+	systray.ResetMenu()
+
+	// set the title and tooltip
+	systray.SetTitle(AppName)
+	systray.SetTooltip(AppName)
+
+	// set the icon
+	systray.SetIcon(readIcon("wallpaper"))
+
+	var mRefresh, mSpeak, mQuit, mPropertiesAudio *systray.MenuItem
+
+	// Main section
+	mRefresh = systray.AddMenuItem("Refresh", "Refresh the wallpaper")
+	mRefresh.SetIcon(readIcon("refresh"))
+	mRefresh.Click(func() {
+		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
+		mPropertiesAudio.Hide()
+		c.img.Update(c.execute(c.cfg))
+		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
+		if c.img != nil && c.img.Audio != nil {
+			mSpeak.Enable()
+			mPropertiesAudio.Show()
+		}
+	})
+
+	mSpeak = systray.AddMenuItem("Speak", "Speak the wallpaper description")
+	mSpeak.SetIcon(readIcon("play"))
+	mSpeak.Click(func() {
+		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
+		if c.img != nil && c.img.Audio != nil {
+			if err := c.img.Audio.Play(); err != nil {
+				logger.Logger.Printf("Failed to play audio: %v", err)
+			}
+		}
+		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mSpeak, mQuit)
+	})
+
+	systray.AddSeparator()
+
+	apiMenu := systray.AddMenuItem("API", "API of the wallpaper")
+	serverAddr := fmt.Sprintf("localhost:%d", c.cfg.ApiPort)
+	apiMenuRetrieveConfig := apiMenu.AddSubMenuItem("Retrieve Config", "Retrieve the config")
+	makeApiCommand(apiMenuRetrieveConfig, serverAddr, http.MethodGet, "/config", "", false)
+	apiMenuUpdateConfig := apiMenu.AddSubMenuItem("Update Config", "Update the config")
+	makeApiCommand(apiMenuUpdateConfig, serverAddr, http.MethodPatch, "/config", "refresh=true", true)
+
+	systray.AddSeparator()
+
+	// Config section
+	mConfig := systray.AddMenuItem("Configure", "Configure the wallpaper settings")
+	mConfigDay := mConfig.AddSubMenuItem("Day", "Day of the Bing wallpaper")
+	makeConfigSection(map[types.Day]*systray.MenuItem{
+		types.DayToday: mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
+		types.Day1Ago:  mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
+		types.Day2Ago:  mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
+		types.Day3Ago:  mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
+		types.Day4Ago:  mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
+		types.Day5Ago:  mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
+		types.Day6Ago:  mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
+		types.Day7Ago:  mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
+	}, c.cfg, func(c *Config) types.Day { return c.Day.Value() }, func(c *Config, d types.Day) {
+		logger.Logger.Printf("Setting Day: %v", d)
+		c.Day.SetDefault(d)
+	})
+
+	mConfigMode := mConfig.AddSubMenuItem("Mode", "Define how the wallpaper is set")
+	makeConfigSection(map[Mode]*systray.MenuItem{
+		ModeCenter:  mConfigMode.AddSubMenuItemCheckbox("Center", "Center mode", false),
+		ModeCrop:    mConfigMode.AddSubMenuItemCheckbox("Crop", "Crop mode", false),
+		ModeFit:     mConfigMode.AddSubMenuItemCheckbox("Fit", "Fit mode", false),
+		ModeSpan:    mConfigMode.AddSubMenuItemCheckbox("Span", "Span mode", false),
+		ModeStretch: mConfigMode.AddSubMenuItemCheckbox("Stretch", "Stretch mode", false),
+		ModeTile:    mConfigMode.AddSubMenuItemCheckbox("Tile", "Tile mode", false),
+	}, c.cfg, func(c *Config) Mode { return c.Mode.Value() }, func(c *Config, m Mode) {
+		logger.Logger.Printf("Setting Mode: %v", m)
+		c.Mode.SetDefault(m)
+	})
+
+	mConfigRegion := mConfig.AddSubMenuItem("Region", "Region of the Bing wallpaper")
+	makeConfigSection(map[types.Region]*systray.MenuItem{
+		types.RegionBrazil:        mConfigRegion.AddSubMenuItemCheckbox("Brazil Portuguese", "Brazilian region", false),
+		types.RegionCanadaEnglish: mConfigRegion.AddSubMenuItemCheckbox("Canada English", "Canadian region (English)", false),
+		types.RegionCanadaFrench:  mConfigRegion.AddSubMenuItemCheckbox("Canada French", "Canadian region (French)", false),
+		types.RegionChina:         mConfigRegion.AddSubMenuItemCheckbox("China", "Chinese region", false),
+		types.RegionFrance:        mConfigRegion.AddSubMenuItemCheckbox("France", "French region", false),
+		types.RegionGermany:       mConfigRegion.AddSubMenuItemCheckbox("Germany", "German region", false),
+		types.RegionIndia:         mConfigRegion.AddSubMenuItemCheckbox("India", "Indian region", false),
+		types.RegionItaly:         mConfigRegion.AddSubMenuItemCheckbox("Italy", "Italian region", false),
+		types.RegionJapan:         mConfigRegion.AddSubMenuItemCheckbox("Japan", "Japanese region", false),
+		types.RegionNewZealand:    mConfigRegion.AddSubMenuItemCheckbox("New Zealand", "New Zealand's region", false),
+		types.RegionOther:         mConfigRegion.AddSubMenuItemCheckbox("Other", "Other regions", false),
+		types.RegionSpain:         mConfigRegion.AddSubMenuItemCheckbox("Spain", "Spanish region", false),
+		types.RegionUnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "British region", false),
+		types.RegionUnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "US region", false),
+	}, c.cfg, func(c *Config) types.Region { return c.Region.Value() }, func(c *Config, r types.Region) {
+		logger.Logger.Printf("Setting Region: %v", r)
+		c.Region.SetDefault(r)
+	})
+
+	mConfigResolution := mConfig.AddSubMenuItem("Resolution", "Resolution of the wallpaper")
+	makeConfigSection(map[types.Resolution]*systray.MenuItem{
+		types.LowDefinition:       mConfigResolution.AddSubMenuItemCheckbox("Low Definition", "Low Definition resolution", false),
+		types.HighDefinition:      mConfigResolution.AddSubMenuItemCheckbox("High Definition", "High Definition resolution", false),
+		types.UltraHighDefinition: mConfigResolution.AddSubMenuItemCheckbox("Ultra High Definition", "Ultra High Definition resolution", false),
+	}, c.cfg, func(c *Config) types.Resolution { return c.Resolution.Value() }, func(c *Config, r types.Resolution) {
+		logger.Logger.Printf("Setting Resolution: %v", r)
+		c.Resolution.SetDefault(r)
+	})
+
+	mConfigDimImage := mConfig.AddSubMenuItem("Dim Image", "Dim the image")
+	makeConfigSection(map[types.Percent]*systray.MenuItem{
+		0.0:   mConfigDimImage.AddSubMenuItemCheckbox("0%", "0% dim", false),
+		20.0:  mConfigDimImage.AddSubMenuItemCheckbox("20%", "20% dim", false),
+		40.0:  mConfigDimImage.AddSubMenuItemCheckbox("40%", "40% dim", false),
+		60.0:  mConfigDimImage.AddSubMenuItemCheckbox("60%", "60% dim", false),
+		80.0:  mConfigDimImage.AddSubMenuItemCheckbox("80%", "80% dim", false),
+		100.0: mConfigDimImage.AddSubMenuItemCheckbox("100%", "100% dim", false),
+	}, c.cfg, func(c *Config) types.Percent {
+		// round to the nearest 20% to find the closest matching value
+		return types.Percent(math.Round(float64(c.DimImage)/20) * 20)
+	}, func(c *Config, p types.Percent) {
+		logger.Logger.Printf("Setting DimImage: %v", p)
+		c.DimImage = p
+	})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw Description", "Draw the wallpaper description", false), c.cfg,
+		func(c *Config) bool { return c.DrawDescription },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting DrawDescription: %v", b)
+			c.DrawDescription = b
+		})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw QR Code", "Draw the QR code", false), c.cfg,
+		func(c *Config) bool { return c.DrawQRCode },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting DrawQRCode: %v", b)
+			c.DrawQRCode = b
+		})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Download Only", "Download the wallpaper only", false), c.cfg,
+		func(c *Config) bool { return c.DownloadOnly },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting DownloadOnly: %v", b)
+			c.DownloadOnly = b
+		})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Rotate Wallpaper counter clockwise", "Rotate the wallpaper counter clockwise", false), c.cfg,
+		func(c *Config) bool { return c.RotateCounterClockwise },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting RotateWallpaper: %v", b)
+			c.RotateCounterClockwise = b
+		})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Text2Speech Service", "Use Google Text2Speech Service", false), c.cfg,
+		func(c *Config) bool { return c.UseGoogleText2SpeechService },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting UseGoogleText2SpeechService: %v", b)
+			c.UseGoogleText2SpeechService = b
+		})
+
+	makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Translate Service", "Use Google Translate Service", false), c.cfg,
+		func(c *Config) bool { return c.UseGoogleTranslateService },
+		func(c *Config, b bool) {
+			logger.Logger.Printf("Setting UseGoogleTranslateService: %v", b)
+			c.UseGoogleTranslateService = b
+		})
+
+	makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), false, c.cfg,
+		func(c *Config) string { return c.Watermark }, func(_ *Config, s string) { openDirectory(s) })
+
+	makeConfigInfo(mConfig.AddSubMenuItem("Google App Credentials", "Google App Credentials"), false, c.cfg,
+		func(c *Config) string { return c.GoogleAppCredentials }, func(_ *Config, s string) { openDirectory(s) })
+
+	makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), true, c.cfg,
+		func(c *Config) string { return c.FuriganaApiAppId }, nil)
+
+	makeConfigInfo(mConfig.AddSubMenuItem("Download Directory", "Download Directory"), false, c.cfg,
+		func(c *Config) string { return c.DownloadDirectory }, func(_ *Config, s string) { openDirectory(s) })
+
+	systray.AddSeparator()
+
+	// Property section
+	mProperties := systray.AddMenuItem("Properties", "Properties of the wallpaper")
+
+	mPropertiesImage := mProperties.AddSubMenuItem("Image", "Image data of the wallpaper")
+	makePropertyCopyAction(mPropertiesImage.
+		AddSubMenuItem("Copy", "Copy the image data to the clipboard"),
+		c.img, clipboard.FmtImage,
+		func(i *Image) []byte {
+			buf := bytes.NewBuffer(nil)
+			_ = png.Encode(buf, i)
+			return buf.Bytes()
+		})
+	makePropertyOpenAction(mPropertiesImage.AddSubMenuItem("Open", "Open the image in the browser"), c.img,
+		func(i *Image) string { return "file://" + i.Location })
+
+	mPropertiesAudio = mProperties.
+		AddSubMenuItem("Audio", "Audio data of the wallpaper")
+	makePropertyOpenAction(mPropertiesAudio.
+		AddSubMenuItem("Open", "Open the audio in the browser"), c.img,
+		func(i *Image) string {
+			if i.Audio != nil {
+				return "file://" + i.Audio.Location
+			}
+
+			return ""
+		})
+
+	makePropertyCopyAction(mProperties.
+		AddSubMenuItem("Description", "Description of the wallpaper").
+		AddSubMenuItem("Copy", "Copy the description to the clipboard"),
+		c.img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.Description) })
+
+	mPropertiesSearchUrl := mProperties.AddSubMenuItem("Search URL", "Search URL of the wallpaper")
+	makePropertyCopyAction(mPropertiesSearchUrl.AddSubMenuItem("Copy", "Copy the search URL to the clipboard"),
+		c.img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.SearchURL) })
+	makePropertyOpenAction(mPropertiesSearchUrl.AddSubMenuItem("Open", "Open the search URL in the browser"), c.img,
+		func(i *Image) string { return i.SearchURL })
+
+	mPropertiesDownloadUrl := mProperties.AddSubMenuItem("Download URL", "Download URL of the wallpaper")
+	makePropertyCopyAction(mPropertiesDownloadUrl.AddSubMenuItem("Copy", "Copy the download URL to the clipboard"),
+		c.img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.DownloadURL) })
+	makePropertyOpenAction(mPropertiesDownloadUrl.AddSubMenuItem("Open", "Open the download URL in the browser"), c.img,
+		func(i *Image) string { return i.DownloadURL })
+
+	systray.AddSeparator()
+
+	// Quit section
+	mQuit = systray.AddMenuItem("Quit", "Quit the whole app")
+	mQuit.SetIcon(readIcon("quit"))
+	mQuit.Click(systray.Quit)
+
+	// initial execution
+	modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
+	mPropertiesAudio.Hide()
+	c.img.Update(c.execute(c.cfg))
+	modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
+	if c.img != nil && c.img.Audio != nil {
+		mSpeak.Enable()
+		mPropertiesAudio.Show()
+	}
+}
+
+// onExit is called when the systray menu is closed.
+func (c *systrayController) onExit() {
+	// close the audio stream
+	if c.img != nil && c.img.Audio != nil {
+		_ = c.img.Audio.Close()
+	}
+
+	// stop the server
+	if c.server != nil {
+		_ = c.server.Stop()
+	}
+}
+
 // modify modifies the given menu items with the given operation.
 func modify(op func(*systray.MenuItem), items ...*systray.MenuItem) {
 	for _, item := range items {
 		op(item)
 	}
+}
+
+// makeApiCommand creates a menu item with a copy action
+func makeApiCommand(item *systray.MenuItem, addr, verb, path, query string, payload bool) {
+	item.SetIcon(readIcon("copy"))
+	item.Click(func() {
+		if clipboardErr != nil {
+			logger.Logger.Printf("Failed to initialize clipboard: %v", clipboardErr)
+			return
+		}
+		uri := &url.URL{
+			Scheme:   "http",
+			Host:     addr,
+			Path:     path,
+			RawQuery: query,
+		}
+		cmd := fmt.Sprintf("curl -X %s %s", verb, uri.String())
+		if payload {
+			cmd += " -d '{...}'"
+		}
+		_ = clipboard.Write(clipboard.FmtText, []byte(cmd))
+	})
 }
 
 // makeConfigInfo creates a read-only menu item
@@ -178,232 +471,21 @@ func readIcon(name string) []byte {
 
 // Run executes the given function with the given configuration.
 func Run(execute func(*Config) *Image, cfg *Config) {
+	img := &Image{}
 	if !cfg.Daemon {
 		_ = execute(cfg)
 		return
 	}
 
-	img := &Image{}
-	onReady := func() {
-		systray.SetTitle(AppName)
-		systray.SetTooltip(AppName)
-		systray.SetIcon(readIcon("wallpaper"))
+	controller := &systrayController{img: img, cfg: cfg, execute: execute}
+	server := NewServer(cfg, img, execute, controller.onReady)
+	controller.server = server
 
-		var mRefresh, mSpeak, mQuit, mPropertiesAudio *systray.MenuItem
-
-		// Main section
-		mRefresh = systray.AddMenuItem("Refresh", "Refresh the wallpaper")
-		mRefresh.SetIcon(readIcon("refresh"))
-		mRefresh.Click(func() {
-			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
-			mPropertiesAudio.Hide()
-			img.Update(execute(cfg))
-			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
-			if img != nil && img.Audio != nil {
-				mSpeak.Enable()
-				mPropertiesAudio.Show()
-			}
-		})
-
-		mSpeak = systray.AddMenuItem("Speak", "Speak the wallpaper description")
-		mSpeak.SetIcon(readIcon("play"))
-		mSpeak.Click(func() {
-			modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
-			if img != nil && img.Audio != nil {
-				if err := img.Audio.Play(); err != nil {
-					logger.Logger.Printf("Failed to play audio: %v", err)
-				}
-			}
-			modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mSpeak, mQuit)
-		})
-
-		systray.AddSeparator()
-
-		// Config section
-		mConfig := systray.AddMenuItem("Configure", "Configure the wallpaper settings")
-		mConfigDay := mConfig.AddSubMenuItem("Day", "Day of the Bing wallpaper")
-		makeConfigSection(map[types.Day]*systray.MenuItem{
-			types.DayToday: mConfigDay.AddSubMenuItemCheckbox("Today", "Today's wallpaper", false),
-			types.Day1Ago:  mConfigDay.AddSubMenuItemCheckbox("Yesterday", "Yesterday's wallpaper", false),
-			types.Day2Ago:  mConfigDay.AddSubMenuItemCheckbox("The day before yesterday", "The day before yesterday's wallpaper", false),
-			types.Day3Ago:  mConfigDay.AddSubMenuItemCheckbox("Three days ago", "Three days ago's wallpaper", false),
-			types.Day4Ago:  mConfigDay.AddSubMenuItemCheckbox("Four days ago", "Four days ago's wallpaper", false),
-			types.Day5Ago:  mConfigDay.AddSubMenuItemCheckbox("Five days ago", "Five days ago's wallpaper", false),
-			types.Day6Ago:  mConfigDay.AddSubMenuItemCheckbox("Six days ago", "Six days ago's wallpaper", false),
-			types.Day7Ago:  mConfigDay.AddSubMenuItemCheckbox("Seven days ago", "Seven days ago's wallpaper", false),
-		}, cfg, func(c *Config) types.Day { return c.Day.Value() }, func(c *Config, d types.Day) {
-			logger.Logger.Printf("Setting Day: %v", d)
-			c.Day.SetDefault(d)
-		})
-
-		mConfigMode := mConfig.AddSubMenuItem("Mode", "Define how the wallpaper is set")
-		makeConfigSection(map[Mode]*systray.MenuItem{
-			ModeCenter:  mConfigMode.AddSubMenuItemCheckbox("Center", "Center mode", false),
-			ModeCrop:    mConfigMode.AddSubMenuItemCheckbox("Crop", "Crop mode", false),
-			ModeFit:     mConfigMode.AddSubMenuItemCheckbox("Fit", "Fit mode", false),
-			ModeSpan:    mConfigMode.AddSubMenuItemCheckbox("Span", "Span mode", false),
-			ModeStretch: mConfigMode.AddSubMenuItemCheckbox("Stretch", "Stretch mode", false),
-			ModeTile:    mConfigMode.AddSubMenuItemCheckbox("Tile", "Tile mode", false),
-		}, cfg, func(c *Config) Mode { return c.Mode.Value() }, func(c *Config, m Mode) {
-			logger.Logger.Printf("Setting Mode: %v", m)
-			c.Mode.SetDefault(m)
-		})
-
-		mConfigRegion := mConfig.AddSubMenuItem("Region", "Region of the Bing wallpaper")
-		makeConfigSection(map[types.Region]*systray.MenuItem{
-			types.RegionBrazil:        mConfigRegion.AddSubMenuItemCheckbox("Brazil Portuguese", "Brazilian region", false),
-			types.RegionCanadaEnglish: mConfigRegion.AddSubMenuItemCheckbox("Canada English", "Canadian region (English)", false),
-			types.RegionCanadaFrench:  mConfigRegion.AddSubMenuItemCheckbox("Canada French", "Canadian region (French)", false),
-			types.RegionChina:         mConfigRegion.AddSubMenuItemCheckbox("China", "Chinese region", false),
-			types.RegionFrance:        mConfigRegion.AddSubMenuItemCheckbox("France", "French region", false),
-			types.RegionGermany:       mConfigRegion.AddSubMenuItemCheckbox("Germany", "German region", false),
-			types.RegionIndia:         mConfigRegion.AddSubMenuItemCheckbox("India", "Indian region", false),
-			types.RegionItaly:         mConfigRegion.AddSubMenuItemCheckbox("Italy", "Italian region", false),
-			types.RegionJapan:         mConfigRegion.AddSubMenuItemCheckbox("Japan", "Japanese region", false),
-			types.RegionNewZealand:    mConfigRegion.AddSubMenuItemCheckbox("New Zealand", "New Zealand's region", false),
-			types.RegionOther:         mConfigRegion.AddSubMenuItemCheckbox("Other", "Other regions", false),
-			types.RegionSpain:         mConfigRegion.AddSubMenuItemCheckbox("Spain", "Spanish region", false),
-			types.RegionUnitedKingdom: mConfigRegion.AddSubMenuItemCheckbox("United Kingdom", "British region", false),
-			types.RegionUnitedStates:  mConfigRegion.AddSubMenuItemCheckbox("United States", "US region", false),
-		}, cfg, func(c *Config) types.Region { return c.Region.Value() }, func(c *Config, r types.Region) {
-			logger.Logger.Printf("Setting Region: %v", r)
-			c.Region.SetDefault(r)
-		})
-
-		mConfigResolution := mConfig.AddSubMenuItem("Resolution", "Resolution of the wallpaper")
-		makeConfigSection(map[types.Resolution]*systray.MenuItem{
-			types.LowDefinition:       mConfigResolution.AddSubMenuItemCheckbox("Low Definition", "Low Definition resolution", false),
-			types.HighDefinition:      mConfigResolution.AddSubMenuItemCheckbox("High Definition", "High Definition resolution", false),
-			types.UltraHighDefinition: mConfigResolution.AddSubMenuItemCheckbox("Ultra High Definition", "Ultra High Definition resolution", false),
-		}, cfg, func(c *Config) types.Resolution { return c.Resolution.Value() }, func(c *Config, r types.Resolution) {
-			logger.Logger.Printf("Setting Resolution: %v", r)
-			c.Resolution.SetDefault(r)
-		})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw Description", "Draw the wallpaper description", false), cfg,
-			func(c *Config) bool { return c.DrawDescription },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting DrawDescription: %v", b)
-				c.DrawDescription = b
-			})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Draw QR Code", "Draw the QR code", false), cfg,
-			func(c *Config) bool { return c.DrawQRCode },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting DrawQRCode: %v", b)
-				c.DrawQRCode = b
-			})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Download Only", "Download the wallpaper only", false), cfg,
-			func(c *Config) bool { return c.DownloadOnly },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting DownloadOnly: %v", b)
-				c.DownloadOnly = b
-			})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Rotate Wallpaper counter clockwise", "Rotate the wallpaper counter clockwise", false), cfg,
-			func(c *Config) bool { return c.RotateCounterClockwise },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting RotateWallpaper: %v", b)
-				c.RotateCounterClockwise = b
-			})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Text2Speech Service", "Use Google Text2Speech Service", false), cfg,
-			func(c *Config) bool { return c.UseGoogleText2SpeechService },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting UseGoogleText2SpeechService: %v", b)
-				c.UseGoogleText2SpeechService = b
-			})
-
-		makeConfigOption(mConfig.AddSubMenuItemCheckbox("Use Google Translate Service", "Use Google Translate Service", false), cfg,
-			func(c *Config) bool { return c.UseGoogleTranslateService },
-			func(c *Config, b bool) {
-				logger.Logger.Printf("Setting UseGoogleTranslateService: %v", b)
-				c.UseGoogleTranslateService = b
-			})
-
-		makeConfigInfo(mConfig.AddSubMenuItem("Watermark", "Watermark to be drawn on the wallpaper"), false, cfg,
-			func(c *Config) string { return c.Watermark }, func(_ *Config, s string) { openDirectory(s) })
-
-		makeConfigInfo(mConfig.AddSubMenuItem("Google App Credentials", "Google App Credentials"), false, cfg,
-			func(c *Config) string { return c.GoogleAppCredentials }, func(_ *Config, s string) { openDirectory(s) })
-
-		makeConfigInfo(mConfig.AddSubMenuItem("Furigana API AppId", "Furigana API AppId"), true, cfg,
-			func(c *Config) string { return c.FuriganaApiAppId }, nil)
-
-		makeConfigInfo(mConfig.AddSubMenuItem("Download Directory", "Download Directory"), false, cfg,
-			func(c *Config) string { return c.DownloadDirectory }, func(_ *Config, s string) { openDirectory(s) })
-
-		systray.AddSeparator()
-
-		// Property section
-		mProperties := systray.AddMenuItem("Properties", "Properties of the wallpaper")
-
-		mPropertiesImage := mProperties.AddSubMenuItem("Image", "Image data of the wallpaper")
-		makePropertyCopyAction(mPropertiesImage.
-			AddSubMenuItem("Copy", "Copy the image data to the clipboard"),
-			img, clipboard.FmtImage,
-			func(i *Image) []byte {
-				buf := bytes.NewBuffer(nil)
-				_ = png.Encode(buf, i)
-				return buf.Bytes()
-			})
-		makePropertyOpenAction(mPropertiesImage.AddSubMenuItem("Open", "Open the image in the browser"), img,
-			func(i *Image) string { return "file://" + i.Location })
-
-		mPropertiesAudio = mProperties.
-			AddSubMenuItem("Audio", "Audio data of the wallpaper")
-		makePropertyOpenAction(mPropertiesAudio.
-			AddSubMenuItem("Open", "Open the audio in the browser"), img,
-			func(i *Image) string {
-				if i.Audio != nil {
-					return "file://" + i.Audio.Location
-				}
-
-				return ""
-			})
-
-		makePropertyCopyAction(mProperties.
-			AddSubMenuItem("Description", "Description of the wallpaper").
-			AddSubMenuItem("Copy", "Copy the description to the clipboard"),
-			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.Description) })
-
-		mPropertiesSearchUrl := mProperties.AddSubMenuItem("Search URL", "Search URL of the wallpaper")
-		makePropertyCopyAction(mPropertiesSearchUrl.AddSubMenuItem("Copy", "Copy the search URL to the clipboard"),
-			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.SearchURL) })
-		makePropertyOpenAction(mPropertiesSearchUrl.AddSubMenuItem("Open", "Open the search URL in the browser"), img,
-			func(i *Image) string { return i.SearchURL })
-
-		mPropertiesDownloadUrl := mProperties.AddSubMenuItem("Download URL", "Download URL of the wallpaper")
-		makePropertyCopyAction(mPropertiesDownloadUrl.AddSubMenuItem("Copy", "Copy the download URL to the clipboard"),
-			img, clipboard.FmtText, func(i *Image) []byte { return []byte(i.DownloadURL) })
-		makePropertyOpenAction(mPropertiesDownloadUrl.AddSubMenuItem("Open", "Open the download URL in the browser"), img,
-			func(i *Image) string { return i.DownloadURL })
-
-		systray.AddSeparator()
-
-		// Quit section
-		mQuit = systray.AddMenuItem("Quit", "Quit the whole app")
-		mQuit.SetIcon(readIcon("quit"))
-		mQuit.Click(systray.Quit)
-
-		// initial execution
-		modify(func(mi *systray.MenuItem) { mi.Disable() }, mRefresh, mSpeak, mQuit)
-		mPropertiesAudio.Hide()
-		img.Update(execute(cfg))
-		modify(func(mi *systray.MenuItem) { mi.Enable() }, mRefresh, mQuit)
-		if img != nil && img.Audio != nil {
-			mSpeak.Enable()
-			mPropertiesAudio.Show()
+	go func() {
+		if err := server.Start(); err != nil && err != http.ErrServerClosed {
+			logger.Logger.Fatalf("Failed to start API server: %v", err)
 		}
-	}
+	}()
 
-	onExit := func() {
-		// close the audio stream
-		if img != nil && img.Audio != nil {
-			_ = img.Audio.Close()
-		}
-	}
-
-	systray.Run(onReady, onExit)
+	systray.Run(controller.onReady, controller.onExit)
 }

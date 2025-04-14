@@ -17,11 +17,12 @@ import (
 // Image is a wrapper around the image.Image interface.
 type Image struct {
 	image.Image
-	Audio       *Audio
-	Description string
-	SearchURL   string
-	DownloadURL string
-	Location    string
+	Audio         *Audio
+	Description   string
+	SearchURL     string
+	DownloadURL   string
+	Location      string
+	DimmedPercent float32
 }
 
 // Equals returns true if the given image is equal to the receiver.
