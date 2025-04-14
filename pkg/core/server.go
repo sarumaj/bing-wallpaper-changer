@@ -13,24 +13,21 @@ import (
 )
 
 type Server struct {
-	config          *Config
-	img             *Image
-	executor        func(*Config) *Image
-	updateLock      sync.Mutex
-	updateProcedure func()
-	server          *http.Server
+	config     *Config
+	controller *Controller
+	updateLock sync.Mutex
+	server     *http.Server
 }
 
 // NewServer creates a new server.
-func NewServer(config *Config, img *Image, executor func(*Config) *Image, updateProcedure func()) *Server {
+func NewServer(config *Config, controller *Controller) *Server {
 	return &Server{
-		config:          config,
-		img:             img,
-		executor:        executor,
-		updateProcedure: updateProcedure,
+		config:     config,
+		controller: controller,
 	}
 }
 
+// Start starts the server.
 func (s *Server) Start() error {
 	router := http.NewServeMux()
 	router.HandleFunc("/config", s.handleConfig)
@@ -70,7 +67,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		// but with pointers to the fields instead of the fields themselves
 		// so that we know which fields were provided in the request
 		fields := make([]reflect.StructField, 0, target.NumField())
-		for i := 0; i < target.NumField(); i++ {
+		for i := range target.NumField() {
 			field := target.Type().Field(i)
 			fields = append(fields, reflect.StructField{
 				Name: field.Name,
@@ -86,43 +83,41 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Update the original config with the new values
-		for i := 0; i < target.NumField(); i++ {
+		updatedFields := 0
+		for i := range target.NumField() {
 			sourceField := source.Elem().Field(i)
 			targetField := target.Field(i)
 			if sourceField.IsNil() {
 				continue
 			}
 
-			targetField.Set(sourceField.Elem())
+			if !reflect.DeepEqual(targetField.Interface(), sourceField.Elem().Interface()) {
+				targetField.Set(sourceField.Elem())
+				updatedFields++
+			}
 		}
 
 		query := r.URL.Query()
-		if result, err := strconv.ParseBool(query.Get("refresh")); err == nil && result {
+		if result, err := strconv.ParseBool(query.Get("refresh")); updatedFields > 0 && err == nil && result {
 			go func() {
 				s.updateLock.Lock()
 				defer s.updateLock.Unlock()
 
-				if s.updateProcedure != nil {
-					defer s.updateProcedure()
-				}
-
-				img := s.executor(s.config)
-				if img == nil {
-					http.Error(w, "Failed to refresh wallpaper", http.StatusInternalServerError)
-					return
-				}
-
-				s.img.Update(img)
+				autoPlayAudio := s.config.AutoPlayAudio
+				s.config.AutoPlayAudio = false
+				s.controller.OnReady()
+				s.config.AutoPlayAudio = autoPlayAudio
 			}()
 		}
 
-		_ = json.NewEncoder(w).Encode(s.config)
+		w.WriteHeader(http.StatusAccepted)
 
 	default:
 		logger.Logger.Printf("Method not allowed: %s", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed: " + r.Method})
 	}
+
 }
 
 // handleRoot handles the root endpoint.
