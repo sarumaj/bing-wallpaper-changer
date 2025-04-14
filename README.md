@@ -62,10 +62,12 @@ $ bing-wallpaper-changer -h
 >
 >Flags:
 >
+>      --api-port int                        the port number of the API server (default 44244)
 >      --daemon                              run the application as a daemon process
 >      --day Enum[types.Day]                 the day to fetch the wallpaper for, allowed values are: today, 1 days ago, 2 days ago, 3 days ago, 4 days ago, 5 days ago, 6 days ago, 7 days ago (default today)
 >      --debug                               enable debug mode
 >      --description                         draw the description on the wallpaper (default true)
+>      --dim-image float                     dim the image by the given percentage (0.0 to 100.0) (default 0.00)
 >      --download-directory string           the directory to download the wallpaper to (default "~/Pictures/BingWallpapers")
 >      --download-only                       download the wallpaper only
 >      --furigana-api-app-id string          the Goo Labs API App ID (labs.goo.ne.jp) for the furigana service, if not provided, Jisho.org (if available) or github.com/sarumaj/go-kakasi will be used
