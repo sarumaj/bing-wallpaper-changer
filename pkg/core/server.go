@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -16,6 +17,7 @@ type Server struct {
 	config     *Config
 	controller *Controller
 	updateLock sync.Mutex
+	listener   net.Listener
 	server     *http.Server
 }
 
@@ -27,18 +29,32 @@ func NewServer(config *Config, controller *Controller) *Server {
 	}
 }
 
+// GetPort returns the port number of the server.
+func (s *Server) GetPort() int {
+	if s.listener == nil {
+		return s.config.ApiPort
+	}
+
+	return s.listener.Addr().(*net.TCPAddr).Port
+}
+
 // Start starts the server.
 func (s *Server) Start() error {
 	router := http.NewServeMux()
 	router.HandleFunc("/config", s.handleConfig)
 	router.HandleFunc("/", s.handleRoot)
 
-	logger.Logger.Printf("Starting API server on port %d", s.config.ApiPort)
-	s.server = &http.Server{
-		Addr:    fmt.Sprintf(":%d", s.config.ApiPort),
-		Handler: router,
+	var err error
+	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.config.ApiPort))
+	if err != nil {
+		return err
 	}
-	return s.server.ListenAndServe()
+
+	s.config.ApiPort = s.listener.Addr().(*net.TCPAddr).Port
+	logger.Logger.Printf("Starting API server on port %d", s.config.ApiPort)
+
+	s.server = &http.Server{Handler: router}
+	return s.server.Serve(s.listener)
 }
 
 // Stop stops the server.
