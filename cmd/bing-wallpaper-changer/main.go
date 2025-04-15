@@ -20,10 +20,10 @@ import (
 const remoteRepository = "sarumaj/bing-wallpaper-changer"
 
 // BuildDate is the date when the binary was built.
-var BuildDate = "2025-04-14 23:47:51 UTC"
+var BuildDate = "2025-04-15 10:43:38 UTC"
 
 // Version is the version of the binary.
-var Version = "v1.1.7"
+var Version = "v1.1.8"
 
 func main() {
 	var config core.Config
