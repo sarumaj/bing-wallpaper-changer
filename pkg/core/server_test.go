@@ -25,7 +25,7 @@ func setupController(t *testing.T, cfg *Config, executed *bool) *Controller {
 }
 
 func TestHandleConfigGET(t *testing.T) {
-	cfg := &Config{ApiPort: 8080}
+	cfg := &Config{DimImage: 5}
 	controller := setupController(t, cfg, nil)
 	server := NewServer(cfg, controller)
 
@@ -43,18 +43,18 @@ func TestHandleConfigGET(t *testing.T) {
 		t.Fatalf("Failed to decode response: %v", err)
 	}
 
-	if response.ApiPort != cfg.ApiPort {
-		t.Errorf("Expected ApiPort %d, got %d", cfg.ApiPort, response.ApiPort)
+	if response.DimImage != cfg.DimImage {
+		t.Errorf("Expected DimImage %g, got %g", cfg.DimImage, response.DimImage)
 	}
 }
 
 func TestHandleConfigPATCH(t *testing.T) {
-	cfg := &Config{ApiPort: 8080}
+	cfg := &Config{}
 	controller := setupController(t, cfg, nil)
 	server := NewServer(cfg, controller)
 
 	newConfig := Config{
-		ApiPort: 9090,
+		DimImage: 10,
 	}
 	body, _ := json.Marshal(newConfig)
 
@@ -67,19 +67,19 @@ func TestHandleConfigPATCH(t *testing.T) {
 		t.Errorf("Expected status code %d, got %d", http.StatusAccepted, w.Code)
 	}
 
-	if cfg.ApiPort != newConfig.ApiPort {
-		t.Errorf("Expected ApiPort to be updated to %d, got %d", newConfig.ApiPort, cfg.ApiPort)
+	if cfg.DimImage != newConfig.DimImage {
+		t.Errorf("Expected DimImage to be updated to %g, got %g", newConfig.DimImage, cfg.DimImage)
 	}
 }
 
 func TestHandleConfigPATCHWithRefresh(t *testing.T) {
-	cfg := &Config{ApiPort: 8080}
+	cfg := &Config{}
 	executed := false
 	controller := setupController(t, cfg, &executed)
 	server := NewServer(cfg, controller)
 
 	newConfig := Config{
-		ApiPort: 9090,
+		DimImage: 10,
 	}
 	body, _ := json.Marshal(newConfig)
 
