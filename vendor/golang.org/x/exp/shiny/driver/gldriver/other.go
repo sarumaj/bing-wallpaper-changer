@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build (!darwin || (!386 && !amd64) || ios) && (!linux || android) && !windows && !openbsd
 // +build !darwin !386,!amd64 ios
 // +build !linux android
 // +build !windows
