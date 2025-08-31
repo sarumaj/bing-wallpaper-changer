@@ -12,7 +12,7 @@ require (
 	github.com/energye/systray v1.0.2
 	github.com/fogleman/gg v1.3.0
 	github.com/gopxl/beep/v2 v2.1.1
-	github.com/hashicorp/go-retryablehttp v0.7.7
+	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/sarumaj/go-kakasi v1.0.3
 	github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3
