@@ -8,7 +8,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
-	github.com/creativeprojects/go-selfupdate v1.4.1
+	github.com/creativeprojects/go-selfupdate v1.5.1
 	github.com/energye/systray v1.0.2
 	github.com/fogleman/gg v1.3.0
 	github.com/gopxl/beep/v2 v2.1.1
