@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build windows
 // +build windows
 
 package gldriver
@@ -236,7 +235,7 @@ func eglErr() error {
 func createEGLSurface(hwnd syscall.Handle, w *windowImpl) error {
 	var displayAttribPlatforms = [][]eglInt{
 		// Default
-		{
+		[]eglInt{
 			_EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			_EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE,
 			_EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, _EGL_DONT_CARE,
@@ -244,7 +243,7 @@ func createEGLSurface(hwnd syscall.Handle, w *windowImpl) error {
 			_EGL_NONE,
 		},
 		// Direct3D 11
-		{
+		[]eglInt{
 			_EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			_EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
 			_EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, _EGL_DONT_CARE,
@@ -252,7 +251,7 @@ func createEGLSurface(hwnd syscall.Handle, w *windowImpl) error {
 			_EGL_NONE,
 		},
 		// Direct3D 9
-		{
+		[]eglInt{
 			_EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			_EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE,
 			_EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, _EGL_DONT_CARE,
@@ -261,7 +260,7 @@ func createEGLSurface(hwnd syscall.Handle, w *windowImpl) error {
 		},
 		// Direct3D 11 with WARP
 		//   https://msdn.microsoft.com/en-us/library/windows/desktop/gg615082.aspx
-		{
+		[]eglInt{
 			_EGL_PLATFORM_ANGLE_TYPE_ANGLE,
 			_EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
 			_EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE,
