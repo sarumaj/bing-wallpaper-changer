@@ -227,7 +227,7 @@ github.com/sarumaj/go-wallpaper
 github.com/skip2/go-qrcode
 github.com/skip2/go-qrcode/bitset
 github.com/skip2/go-qrcode/reedsolomon
-# github.com/spf13/pflag v1.0.6
+# github.com/spf13/pflag v1.0.10
 ## explicit; go 1.12
 github.com/spf13/pflag
 # github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c
