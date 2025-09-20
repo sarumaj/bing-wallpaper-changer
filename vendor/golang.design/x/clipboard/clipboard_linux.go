@@ -5,7 +5,6 @@
 // Written by Changkun Ou <changkun.de>
 
 //go:build linux && !android
-// +build linux,!android
 
 package clipboard
 
@@ -79,6 +78,12 @@ func readc(t string) ([]byte, error) {
 
 	var data *C.char
 	n := C.clipboard_read(ct, &data)
+	switch C.long(n) {
+	case -1:
+		return nil, errUnavailable
+	case -2:
+		return nil, errUnsupported
+	}
 	if data == nil {
 		return nil, errUnavailable
 	}
@@ -157,10 +162,6 @@ func watch(ctx context.Context, t Format) <-chan []byte {
 		}
 	}()
 	return recv
-}
-
-type syncChan struct {
-	c chan int
 }
 
 //export syncStatus

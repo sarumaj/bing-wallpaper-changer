@@ -1,8 +1,8 @@
 [![test_and_report](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/test_and_report.yml/badge.svg)](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/test_and_report.yml)
 [![build_and_release](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/build_and_release.yml/badge.svg)](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/build_and_release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sarumaj/bing-wallpaper-changer)](https://goreportcard.com/report/github.com/sarumaj/bing-wallpaper-changer)
-[![Maintainability](https://img.shields.io/codeclimate/maintainability-percentage/sarumaj/bing-wallpaper-changer.svg)](https://codeclimate.com/github/sarumaj/bing-wallpaper-changer/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/147f265284b27931c2d2/test_coverage)](https://codeclimate.com/github/sarumaj/bing-wallpaper-changer/test_coverage)
+[![Maintainability](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer/maintainability.svg)](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer)
+[![Code Coverage](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer/coverage.svg)](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sarumaj/bing-wallpaper-changer.svg)](https://pkg.go.dev/github.com/sarumaj/bing-wallpaper-changer)
 [![Go version](https://img.shields.io/github/go-mod/go-version/sarumaj/bing-wallpaper-changer?logo=go&label=&labelColor=gray)](https://go.dev)
 [![Release](https://img.shields.io/github/v/release/sarumaj/bing-wallpaper-changer?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
@@ -37,7 +37,7 @@ Done just for fun 😄
   - [x] Rotate if necessary (only clockwise rotation by 90° supported)
 - [x] Dim wallpaper to enable dark-mode setting
 - [x] System tray interface (available on darwin and linux only if compiled with CGO)
-- [x] REST Interface to alter configuration programmatically (dark-mode setup via HTTP request)  
+- [x] REST Interface to alter configuration programmatically (dark-mode setup via HTTP request)
 
 ## Platform specific notes
 

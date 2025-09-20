@@ -2,6 +2,50 @@
 
 
 
+## [0.122.0](https://github.com/googleapis/google-cloud-go/compare/v0.121.6...v0.122.0) (2025-09-04)
+
+
+### Features
+
+* **internal/librariangen:** Add release-init command ([#12751](https://github.com/googleapis/google-cloud-go/issues/12751)) ([52e84cc](https://github.com/googleapis/google-cloud-go/commit/52e84cc9a11077eb3c50a0b5fc9aa26361d63b47))
+
+
+### Bug Fixes
+
+* **internal/godocfx:** Better support for v2 modules ([#12797](https://github.com/googleapis/google-cloud-go/issues/12797)) ([4bc8785](https://github.com/googleapis/google-cloud-go/commit/4bc878597a5e6bd97cf3ee2174f6df7fbdd2d47b))
+* **internal/godocfx:** Module detection when tidy errors ([#12801](https://github.com/googleapis/google-cloud-go/issues/12801)) ([83d46cd](https://github.com/googleapis/google-cloud-go/commit/83d46cdc5ed7cfbb94038e7fa1f787adfe532c74))
+* **internal/librariangen:** Fix goimports errors ([#12765](https://github.com/googleapis/google-cloud-go/issues/12765)) ([83bdaa4](https://github.com/googleapis/google-cloud-go/commit/83bdaa4ce4e42f8b4a29e2055fc4894d8c6b1e2c))
+
+## [0.121.6](https://github.com/googleapis/google-cloud-go/compare/v0.121.5...v0.121.6) (2025-08-14)
+
+
+### Bug Fixes
+
+* **internal/librariangen:** Fix Dockerfile permissions for go mod tidy ([#12704](https://github.com/googleapis/google-cloud-go/issues/12704)) ([0e70a0b](https://github.com/googleapis/google-cloud-go/commit/0e70a0b6afccc016c67337f340e2755fe7a476ca))
+
+## [0.121.5](https://github.com/googleapis/google-cloud-go/compare/v0.121.4...v0.121.5) (2025-08-12)
+
+
+### Bug Fixes
+
+* **internal/librariangen:** Get README title from service config yaml ([#12676](https://github.com/googleapis/google-cloud-go/issues/12676)) ([b3b8f70](https://github.com/googleapis/google-cloud-go/commit/b3b8f70a15ae477885f3ecc92e01ae37b7505de3))
+* **internal/librariangen:** Update source_paths to source_roots in generate-request.json ([#12691](https://github.com/googleapis/google-cloud-go/issues/12691)) ([2adb6f9](https://github.com/googleapis/google-cloud-go/commit/2adb6f9a67f21fba32371fb4b3dcfb7204309560))
+
+## [0.121.4](https://github.com/googleapis/google-cloud-go/compare/v0.121.3...v0.121.4) (2025-07-17)
+
+
+### Bug Fixes
+
+* **geminidataanalytics:** Correct resource reference type for `parent` field in `data_chat_service.proto` ([98ba6f0](https://github.com/googleapis/google-cloud-go/commit/98ba6f06e69685bca510ca85c12124434f9ba1e8))
+* **internal/postprocessor:** Add git ([#12524](https://github.com/googleapis/google-cloud-go/issues/12524)) ([82030ee](https://github.com/googleapis/google-cloud-go/commit/82030eec5d66f25ebc3fee1fda4b45ced370fc2b))
+
+## [0.121.3](https://github.com/googleapis/google-cloud-go/compare/v0.121.2...v0.121.3) (2025-06-25)
+
+
+### Documentation
+
+* **impersonate:** Address TODO in impersonate/example_test.go ([#12401](https://github.com/googleapis/google-cloud-go/issues/12401)) ([dd096ec](https://github.com/googleapis/google-cloud-go/commit/dd096ec81944e785b9245fda7e7b46e9908cfe8f))
+
 ## [0.121.2](https://github.com/googleapis/google-cloud-go/compare/v0.121.1...v0.121.2) (2025-05-21)
 
 

@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build darwin || linux || openbsd
-// +build darwin linux openbsd
 
 package gl
 
@@ -161,7 +160,7 @@ func (ctx *context) cString(str string) (uintptr, func()) {
 	return uintptr(ptr), func() { C.free(ptr) }
 }
 
-// cString creates a pointer to a C string off the Go heap.
+// cStringPtr creates a pointer to a C string off the Go heap.
 // ret is a **char.
 func (ctx *context) cStringPtr(str string) (uintptr, func()) {
 	s, free := ctx.cString(str)
