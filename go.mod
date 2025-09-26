@@ -22,7 +22,7 @@ require (
 	golang.design/x/clipboard v0.7.1
 	golang.org/x/image v0.31.0
 	golang.org/x/net v0.44.0
-	google.golang.org/api v0.249.0
+	google.golang.org/api v0.250.0
 )
 
 require (
