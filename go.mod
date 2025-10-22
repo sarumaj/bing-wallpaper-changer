@@ -3,7 +3,7 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.24.6
 
 require (
-	cloud.google.com/go/texttospeech v1.14.0
+	cloud.google.com/go/texttospeech v1.16.0
 	cloud.google.com/go/translate v1.12.6
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/blang/semver v3.5.1+incompatible

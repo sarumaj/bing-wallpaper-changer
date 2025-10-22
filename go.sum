@@ -10,6 +10,8 @@ cloud.google.com/go/longrunning v0.6.7 h1:IGtfDWHhQCgCjwQjV9iiLnUta9LBCo8R9QmAFs
 cloud.google.com/go/longrunning v0.6.7/go.mod h1:EAFV3IZAKmM56TyiE6VAP3VoTzhZzySwI/YI1s/nRsY=
 cloud.google.com/go/texttospeech v1.14.0 h1:ArOelKEIHCA0St/svzpl668gittbg9CZ1+DYCBRvJmQ=
 cloud.google.com/go/texttospeech v1.14.0/go.mod h1:l25ywjIgXS+mSE2f5LQdXdU7r3MOLwVOGaYZQMiYIWE=
+cloud.google.com/go/texttospeech v1.16.0 h1:Ra4w+6qmaeb12ozlPBqGw8Jzdge1yfzhvZgcXWdXw30=
+cloud.google.com/go/texttospeech v1.16.0/go.mod h1:AeSkoH3ziPvapsuyI07TWY4oGxluAjntX+pF4PJ2jy0=
 cloud.google.com/go/translate v1.12.6 h1:QHcszWZvBLEZHM2WJ6IDg2BUTWzEPMiHhbJAd15yKGU=
 cloud.google.com/go/translate v1.12.6/go.mod h1:nB3AXuX+iHbV8ZURmElcW85qkEDWZw68sf4kqMT/E5o=
 code.gitea.io/sdk/gitea v0.22.0 h1:HCKq7bX/HQ85Nw7c/HAhWgRye+vBp5nQOE8Md1+9Ef0=
