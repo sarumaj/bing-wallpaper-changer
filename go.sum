@@ -18,6 +18,8 @@ cloud.google.com/go/texttospeech v1.16.0 h1:Ra4w+6qmaeb12ozlPBqGw8Jzdge1yfzhvZgc
 cloud.google.com/go/texttospeech v1.16.0/go.mod h1:AeSkoH3ziPvapsuyI07TWY4oGxluAjntX+pF4PJ2jy0=
 cloud.google.com/go/translate v1.12.6 h1:QHcszWZvBLEZHM2WJ6IDg2BUTWzEPMiHhbJAd15yKGU=
 cloud.google.com/go/translate v1.12.6/go.mod h1:nB3AXuX+iHbV8ZURmElcW85qkEDWZw68sf4kqMT/E5o=
+cloud.google.com/go/translate v1.12.7 h1:aSxMbfJ3MVmEdQzu5jGXmPPxCAb1ySsor2yBMCI5MT4=
+cloud.google.com/go/translate v1.12.7/go.mod h1:wwJp14NZyWvcrFANhIXutXj0pOBkYciBHwSlUOykcjI=
 code.gitea.io/sdk/gitea v0.22.0 h1:HCKq7bX/HQ85Nw7c/HAhWgRye+vBp5nQOE8Md1+9Ef0=
 code.gitea.io/sdk/gitea v0.22.0/go.mod h1:yyF5+GhljqvA30sRDreoyHILruNiy4ASufugzYg0VHM=
 github.com/42wim/httpsig v1.2.3 h1:xb0YyWhkYj57SPtfSttIobJUPJZB9as1nsfo7KWVcEs=
@@ -153,6 +155,8 @@ golang.org/x/exp/shiny v0.0.0-20250911091902-df9299821621 h1:mNBlTy+K7iiLiyE5Dmn
 golang.org/x/exp/shiny v0.0.0-20250911091902-df9299821621/go.mod h1:tEo/L/YxpzKrqv+r35dZPMsKHUm5BliNihYkgdxAUX4=
 golang.org/x/image v0.31.0 h1:mLChjE2MV6g1S7oqbXC0/UcKijjm5fnJLUYKIYrLESA=
 golang.org/x/image v0.31.0/go.mod h1:R9ec5Lcp96v9FTF+ajwaH3uGxPH4fKfHHAVbUILxghA=
+golang.org/x/image v0.32.0 h1:6lZQWq75h7L5IWNk0r+SCpUJ6tUVd3v4ZHnbRKLkUDQ=
+golang.org/x/image v0.32.0/go.mod h1:/R37rrQmKXtO6tYXAjtDLwQgFLHmhW+V6ayXlxzP2Pc=
 golang.org/x/mobile v0.0.0-20250911085028-6912353760cf h1:2HVicFltkNthxuudLg8n5TzyNVUESF91+X7+/fxEjSM=
 golang.org/x/mobile v0.0.0-20250911085028-6912353760cf/go.mod h1:tfwPrSLpQwNZm2LZ6L4ol2VGzxz+xdyj0fN+n4A50OQ=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
