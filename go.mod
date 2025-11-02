@@ -4,7 +4,7 @@ go 1.24.6
 
 require (
 	cloud.google.com/go/texttospeech v1.16.0
-	cloud.google.com/go/translate v1.12.6
+	cloud.google.com/go/translate v1.12.7
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
@@ -20,7 +20,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/tidwall/gjson v1.18.0
 	golang.design/x/clipboard v0.7.1
-	golang.org/x/image v0.31.0
+	golang.org/x/image v0.32.0
 	golang.org/x/net v0.46.0
 	google.golang.org/api v0.254.0
 )
