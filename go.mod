@@ -8,7 +8,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
-	github.com/creativeprojects/go-selfupdate v1.5.1
+	github.com/creativeprojects/go-selfupdate v1.5.2
 	github.com/energye/systray v1.0.2
 	github.com/fogleman/gg v1.3.0
 	github.com/gopxl/beep/v2 v2.1.1
@@ -22,7 +22,7 @@ require (
 	golang.design/x/clipboard v0.7.1
 	golang.org/x/image v0.34.0
 	golang.org/x/net v0.48.0
-	google.golang.org/api v0.257.0
+	google.golang.org/api v0.258.0
 )
 
 require (
