@@ -1,6 +1,6 @@
 module github.com/sarumaj/bing-wallpaper-changer
 
-go 1.24.11
+go 1.25
 
 require (
 	cloud.google.com/go/texttospeech v1.16.0
