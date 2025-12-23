@@ -247,7 +247,7 @@ func speakDescription(description string, languageCode string) (*Audio, error) {
 	}
 
 	ctx := context.Background()
-	client, err := texttospeech.NewClient(ctx, option.WithCredentialsJSON(contents))
+	client, err := texttospeech.NewClient(ctx, option.WithAuthCredentialsJSON(option.ServiceAccount, contents))
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +310,7 @@ func translateDescription(description string, source, target string) (string, er
 	}
 
 	ctx := context.Background()
-	client, err := translate.NewTranslationClient(ctx, option.WithCredentialsJSON(contents))
+	client, err := translate.NewTranslationClient(ctx, option.WithAuthCredentialsJSON(option.ServiceAccount, contents))
 	if err != nil {
 		return "", err
 	}
