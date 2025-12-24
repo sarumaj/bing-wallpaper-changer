@@ -215,8 +215,8 @@ github.com/pkg/browser
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/sarumaj/go-kakasi v1.0.3
-## explicit; go 1.21.6
+# github.com/sarumaj/go-kakasi v1.0.4
+## explicit; go 1.25.0
 github.com/sarumaj/go-kakasi
 github.com/sarumaj/go-kakasi/internal/codegen
 github.com/sarumaj/go-kakasi/internal/kanji
