@@ -3,8 +3,8 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.25.0
 
 require (
-	cloud.google.com/go/texttospeech v1.17.0
-	cloud.google.com/go/translate v1.13.0
+	cloud.google.com/go/texttospeech v1.18.0
+	cloud.google.com/go/translate v1.14.0
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
@@ -20,8 +20,8 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/tidwall/gjson v1.18.0
 	golang.design/x/clipboard v0.7.1
-	golang.org/x/image v0.38.0
-	golang.org/x/net v0.52.0
+	golang.org/x/image v0.39.0
+	golang.org/x/net v0.53.0
 	google.golang.org/api v0.275.0
 )
 
@@ -30,7 +30,7 @@ require (
 	cloud.google.com/go/auth v0.20.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
-	cloud.google.com/go/longrunning v0.8.0 // indirect
+	cloud.google.com/go/longrunning v0.9.0 // indirect
 	code.gitea.io/sdk/gitea v0.22.1 // indirect
 	github.com/42wim/httpsig v1.2.3 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
@@ -71,16 +71,16 @@ require (
 	go.opentelemetry.io/otel v1.43.0 // indirect
 	go.opentelemetry.io/otel/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp/shiny v0.0.0-20250911091902-df9299821621 // indirect
 	golang.org/x/mobile v0.0.0-20250911085028-6912353760cf // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/genproto v0.0.0-20260319201613-d00831a3d3e7 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260401001100-f93e5f3e9f0f // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
