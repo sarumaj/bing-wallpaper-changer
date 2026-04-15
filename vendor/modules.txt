@@ -33,12 +33,12 @@ cloud.google.com/go/longrunning
 cloud.google.com/go/longrunning/autogen
 cloud.google.com/go/longrunning/autogen/longrunningpb
 cloud.google.com/go/longrunning/internal
-# cloud.google.com/go/texttospeech v1.18.0
+# cloud.google.com/go/texttospeech v1.19.0
 ## explicit; go 1.25.0
 cloud.google.com/go/texttospeech/apiv1
 cloud.google.com/go/texttospeech/apiv1/texttospeechpb
 cloud.google.com/go/texttospeech/internal
-# cloud.google.com/go/translate v1.14.0
+# cloud.google.com/go/translate v1.15.0
 ## explicit; go 1.25.0
 cloud.google.com/go/translate/apiv3
 cloud.google.com/go/translate/apiv3/translatepb
@@ -426,7 +426,7 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.15.0
 ## explicit; go 1.25.0
 golang.org/x/time/rate
-# google.golang.org/api v0.275.0
+# google.golang.org/api v0.276.0
 ## explicit; go 1.25.0
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport

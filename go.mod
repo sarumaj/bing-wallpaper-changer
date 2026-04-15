@@ -3,8 +3,8 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.25.0
 
 require (
-	cloud.google.com/go/texttospeech v1.18.0
-	cloud.google.com/go/translate v1.14.0
+	cloud.google.com/go/texttospeech v1.19.0
+	cloud.google.com/go/translate v1.15.0
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
@@ -22,7 +22,7 @@ require (
 	golang.design/x/clipboard v0.7.1
 	golang.org/x/image v0.39.0
 	golang.org/x/net v0.53.0
-	google.golang.org/api v0.275.0
+	google.golang.org/api v0.276.0
 )
 
 require (
