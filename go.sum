@@ -28,6 +28,8 @@ cloud.google.com/go/texttospeech v1.18.0 h1:0pI/aUIR7/hpf6T1IhRb9Hbr1nrKddnPeFL1
 cloud.google.com/go/texttospeech v1.18.0/go.mod h1:p/UVJILAo/S5vsJaWZVdDRzNzA7wXIA+hTACvpMeOBk=
 cloud.google.com/go/texttospeech v1.19.0 h1:4AfzGgXxLCaXgoH1rlRzvsnhHXsI3Ef4gBB5EZTreKQ=
 cloud.google.com/go/texttospeech v1.19.0/go.mod h1:p/UVJILAo/S5vsJaWZVdDRzNzA7wXIA+hTACvpMeOBk=
+cloud.google.com/go/texttospeech v1.20.0 h1:K9LjSjyWg3iHkZo7U4XOhN4xfg3ka4vLLmyNw4Q3Jjc=
+cloud.google.com/go/texttospeech v1.20.0/go.mod h1:p/UVJILAo/S5vsJaWZVdDRzNzA7wXIA+hTACvpMeOBk=
 cloud.google.com/go/translate v1.12.7 h1:aSxMbfJ3MVmEdQzu5jGXmPPxCAb1ySsor2yBMCI5MT4=
 cloud.google.com/go/translate v1.12.7/go.mod h1:wwJp14NZyWvcrFANhIXutXj0pOBkYciBHwSlUOykcjI=
 cloud.google.com/go/translate v1.13.0 h1:AX+qllhStJOOs/nWvAJUUo9eucQtmtW3KqpYM8MOfBQ=
@@ -36,6 +38,8 @@ cloud.google.com/go/translate v1.14.0 h1:d0MD1Zj1N62knqL5uapNuYorjPAww86tOPrpnAY
 cloud.google.com/go/translate v1.14.0/go.mod h1:XnU3rbMmUBZFThzPWJOSNy8V1N9ONnjdH/vWyPppcXU=
 cloud.google.com/go/translate v1.15.0 h1:3TYEwGIqE/9CFyX2HUaTmkCFrASRZSZu84c8aEX9tz4=
 cloud.google.com/go/translate v1.15.0/go.mod h1:3mErnHTQBu9yeLiL35K0HBBuaM6Vk2fD/vyWFz790VU=
+cloud.google.com/go/translate v1.16.0 h1:q+qZg5NQt726fNZx0mJFRdHz8qhSG9CmqzUDaLmbbQs=
+cloud.google.com/go/translate v1.16.0/go.mod h1:3mErnHTQBu9yeLiL35K0HBBuaM6Vk2fD/vyWFz790VU=
 code.gitea.io/sdk/gitea v0.22.1 h1:7K05KjRORyTcTYULQ/AwvlVS6pawLcWyXZcTr7gHFyA=
 code.gitea.io/sdk/gitea v0.22.1/go.mod h1:yyF5+GhljqvA30sRDreoyHILruNiy4ASufugzYg0VHM=
 github.com/42wim/httpsig v1.2.3 h1:xb0YyWhkYj57SPtfSttIobJUPJZB9as1nsfo7KWVcEs=
@@ -121,6 +125,8 @@ github.com/googleapis/enterprise-certificate-proxy v0.3.11 h1:vAe81Msw+8tKUxi2Dq
 github.com/googleapis/enterprise-certificate-proxy v0.3.11/go.mod h1:RFV7MUdlb7AgEq2v7FmMCfeSMCllAzWxFgRdusoGks8=
 github.com/googleapis/enterprise-certificate-proxy v0.3.14 h1:yh8ncqsbUY4shRD5dA6RlzjJaT4hi3kII+zYw8wmLb8=
 github.com/googleapis/enterprise-certificate-proxy v0.3.14/go.mod h1:vqVt9yG9480NtzREnTlmGSBmFrA+bzb0yl0TxoBQXOg=
+github.com/googleapis/enterprise-certificate-proxy v0.3.15 h1:xolVQTEXusUcAA5UgtyRLjelpFFHWlPQ4XfWGc7MBas=
+github.com/googleapis/enterprise-certificate-proxy v0.3.15/go.mod h1:vqVt9yG9480NtzREnTlmGSBmFrA+bzb0yl0TxoBQXOg=
 github.com/googleapis/gax-go/v2 v2.15.0 h1:SyjDc1mGgZU5LncH8gimWo9lW1DtIfPibOG81vgd/bo=
 github.com/googleapis/gax-go/v2 v2.15.0/go.mod h1:zVVkkxAQHa1RQpg9z2AUCMnKhi0Qld9rcmyfL1OZhoc=
 github.com/googleapis/gax-go/v2 v2.17.0 h1:RksgfBpxqff0EZkDWYuz9q/uWsTVz+kf43LsZ1J6SMc=
@@ -131,6 +137,8 @@ github.com/googleapis/gax-go/v2 v2.20.0 h1:NIKVuLhDlIV74muWlsMM4CcQZqN6JJ20Qcxd9
 github.com/googleapis/gax-go/v2 v2.20.0/go.mod h1:But/NJU6TnZsrLai/xBAQLLz+Hc7fHZJt/hsCz3Fih4=
 github.com/googleapis/gax-go/v2 v2.21.0 h1:h45NjjzEO3faG9Lg/cFrBh2PgegVVgzqKzuZl/wMbiI=
 github.com/googleapis/gax-go/v2 v2.21.0/go.mod h1:But/NJU6TnZsrLai/xBAQLLz+Hc7fHZJt/hsCz3Fih4=
+github.com/googleapis/gax-go/v2 v2.22.0 h1:PjIWBpgGIVKGoCXuiCoP64altEJCj3/Ei+kSU5vlZD4=
+github.com/googleapis/gax-go/v2 v2.22.0/go.mod h1:irWBbALSr0Sk3qlqb9SyJ1h68WjgeFuiOzI4Rqw5+aY=
 github.com/gopxl/beep/v2 v2.1.1 h1:6FYIYMm2qPAdWkjX+7xwKrViS1x0Po5kDMdRkq8NVbU=
 github.com/gopxl/beep/v2 v2.1.1/go.mod h1:ZAm9TGQ9lvpoiFLd4zf5B1IuyxZhgRACMId1XJbaW0E=
 github.com/hajimehoshi/go-mp3 v0.3.4 h1:NUP7pBYH8OguP4diaTZ9wJbUbk3tC0KlfzsEpWmYj68=
@@ -382,6 +390,8 @@ google.golang.org/api v0.275.0 h1:vfY5d9vFVJeWEZT65QDd9hbndr7FyZ2+6mIzGAh71NI=
 google.golang.org/api v0.275.0/go.mod h1:Fnag/EWUPIcJXuIkP1pjoTgS5vdxlk3eeemL7Do6bvw=
 google.golang.org/api v0.276.0 h1:nVArUtfLEihtW+b0DdcqRGK1xoEm2+ltAihyztq7MKY=
 google.golang.org/api v0.276.0/go.mod h1:Fnag/EWUPIcJXuIkP1pjoTgS5vdxlk3eeemL7Do6bvw=
+google.golang.org/api v0.277.0 h1:HJfyJUiNeBBUMai7ez8u14wkp/gH/I4wpGbbO9o+cSk=
+google.golang.org/api v0.277.0/go.mod h1:B9TqLBwJqVjp1mtt7WeoQwWRwvu/400y5lETOql+giQ=
 google.golang.org/genproto v0.0.0-20250908214217-97024824d090 h1:ywCL7vA2n3vVHyf+bx1ZV/knaTPRI8GIeKY0MEhEeOc=
 google.golang.org/genproto v0.0.0-20250908214217-97024824d090/go.mod h1:zwJI9HzbJJlw2KXy0wX+lmT2JuZoaKK9JC4ppqmxxjk=
 google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 h1:VQZ/yAbAtjkHgH80teYd2em3xtIkkHd7ZhqfH2N9CsM=
@@ -410,6 +420,8 @@ google.golang.org/genproto/googleapis/rpc v0.0.0-20260401001100-f93e5f3e9f0f h1:
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260401001100-f93e5f3e9f0f/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 h1:m8qni9SQFH0tJc1X0vmnpw/0t+AImlSvp30sEupozUg=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20260427160629-7cedc36a6bc4 h1:tEkOQcXgF6dH1G+MVKZrfpYvozGrzb91k6ha7jireSM=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20260427160629-7cedc36a6bc4/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
 google.golang.org/grpc v1.77.0 h1:wVVY6/8cGA6vvffn+wWK5ToddbgdU3d8MNENr4evgXM=
 google.golang.org/grpc v1.77.0/go.mod h1:z0BY1iVj0q8E1uSQCjL9cppRj+gnZjzDnzV0dHhrNig=
 google.golang.org/grpc v1.78.0 h1:K1XZG/yGDJnzMdd/uZHAkVqJE+xIDOcmdSFZkBUicNc=
