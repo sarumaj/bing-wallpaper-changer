@@ -33,12 +33,12 @@ cloud.google.com/go/longrunning
 cloud.google.com/go/longrunning/autogen
 cloud.google.com/go/longrunning/autogen/longrunningpb
 cloud.google.com/go/longrunning/internal
-# cloud.google.com/go/texttospeech v1.20.0
+# cloud.google.com/go/texttospeech v1.21.0
 ## explicit; go 1.25.0
 cloud.google.com/go/texttospeech/apiv1
 cloud.google.com/go/texttospeech/apiv1/texttospeechpb
 cloud.google.com/go/texttospeech/internal
-# cloud.google.com/go/translate v1.16.0
+# cloud.google.com/go/translate v1.17.0
 ## explicit; go 1.25.0
 cloud.google.com/go/translate/apiv3
 cloud.google.com/go/translate/apiv3/translatepb
@@ -239,8 +239,8 @@ github.com/skip2/go-qrcode/reedsolomon
 github.com/spf13/pflag
 # github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c
 ## explicit; go 1.14
-# github.com/tidwall/gjson v1.18.0
-## explicit; go 1.12
+# github.com/tidwall/gjson v1.19.0
+## explicit; go 1.23
 github.com/tidwall/gjson
 # github.com/tidwall/match v1.2.0
 ## explicit; go 1.15
@@ -303,7 +303,7 @@ go.opentelemetry.io/otel/trace/noop
 # golang.design/x/clipboard v0.7.1
 ## explicit; go 1.24
 golang.design/x/clipboard
-# golang.org/x/crypto v0.50.0
+# golang.org/x/crypto v0.51.0
 ## explicit; go 1.25.0
 golang.org/x/crypto/blake2b
 golang.org/x/crypto/blake2s
@@ -339,7 +339,7 @@ golang.org/x/exp/shiny/driver/internal/lifecycler
 golang.org/x/exp/shiny/driver/internal/win32
 golang.org/x/exp/shiny/driver/internal/x11key
 golang.org/x/exp/shiny/screen
-# golang.org/x/image v0.39.0
+# golang.org/x/image v0.40.0
 ## explicit; go 1.25.0
 golang.org/x/image/bmp
 golang.org/x/image/draw
@@ -367,7 +367,7 @@ golang.org/x/mobile/event/touch
 golang.org/x/mobile/geom
 golang.org/x/mobile/gl
 golang.org/x/mobile/internal/mobileinit
-# golang.org/x/net v0.53.0
+# golang.org/x/net v0.54.0
 ## explicit; go 1.25.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -395,13 +395,13 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.20.0
 ## explicit; go 1.25.0
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.43.0
+# golang.org/x/sys v0.44.0
 ## explicit; go 1.25.0
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/text v0.36.0
+# golang.org/x/text v0.37.0
 ## explicit; go 1.25.0
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap

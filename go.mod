@@ -3,8 +3,8 @@ module github.com/sarumaj/bing-wallpaper-changer
 go 1.25.0
 
 require (
-	cloud.google.com/go/texttospeech v1.20.0
-	cloud.google.com/go/translate v1.16.0
+	cloud.google.com/go/texttospeech v1.21.0
+	cloud.google.com/go/translate v1.17.0
 	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
@@ -18,10 +18,10 @@ require (
 	github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.10
-	github.com/tidwall/gjson v1.18.0
+	github.com/tidwall/gjson v1.19.0
 	golang.design/x/clipboard v0.7.1
-	golang.org/x/image v0.39.0
-	golang.org/x/net v0.53.0
+	golang.org/x/image v0.40.0
+	golang.org/x/net v0.54.0
 	google.golang.org/api v0.278.0
 )
 
@@ -71,13 +71,13 @@ require (
 	go.opentelemetry.io/otel v1.43.0 // indirect
 	go.opentelemetry.io/otel/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
 	golang.org/x/exp/shiny v0.0.0-20250911091902-df9299821621 // indirect
 	golang.org/x/mobile v0.0.0-20250911085028-6912353760cf // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/genproto v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
