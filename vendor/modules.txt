@@ -220,8 +220,8 @@ github.com/pkg/browser
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/sarumaj/go-kakasi v1.0.5
-## explicit; go 1.25.0
+# github.com/sarumaj/go-kakasi v1.1.0
+## explicit; go 1.26.0
 github.com/sarumaj/go-kakasi
 github.com/sarumaj/go-kakasi/internal/codegen
 github.com/sarumaj/go-kakasi/internal/kanji
@@ -343,7 +343,7 @@ golang.org/x/exp/shiny/driver/internal/lifecycler
 golang.org/x/exp/shiny/driver/internal/win32
 golang.org/x/exp/shiny/driver/internal/x11key
 golang.org/x/exp/shiny/screen
-# golang.org/x/image v0.42.0
+# golang.org/x/image v0.43.0
 ## explicit; go 1.25.0
 golang.org/x/image/bmp
 golang.org/x/image/ccitt
@@ -352,6 +352,7 @@ golang.org/x/image/font
 golang.org/x/image/font/basicfont
 golang.org/x/image/font/opentype
 golang.org/x/image/font/sfnt
+golang.org/x/image/internal/safemath
 golang.org/x/image/math/f64
 golang.org/x/image/math/fixed
 golang.org/x/image/riff
@@ -433,7 +434,7 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.15.0
 ## explicit; go 1.25.0
 golang.org/x/time/rate
-# google.golang.org/api v0.284.0
+# google.golang.org/api v0.286.0
 ## explicit; go 1.25.8
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -454,7 +455,7 @@ google.golang.org/genproto/googleapis/cloud/location
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20260610212136-7ab31c22f7ad
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
