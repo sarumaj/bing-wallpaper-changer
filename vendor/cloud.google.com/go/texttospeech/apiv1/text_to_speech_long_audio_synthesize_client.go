@@ -32,6 +32,7 @@ import (
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	gax "github.com/googleapis/gax-go/v2"
 	"github.com/googleapis/gax-go/v2/callctx"
+	trace "go.opentelemetry.io/otel/trace"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/api/option/internaloption"
@@ -116,7 +117,7 @@ type TextToSpeechLongAudioSynthesizeClient struct {
 
 // Wrapper methods routed to the internal client.
 
-// Close closes the connection to the API service. The user should invoke this when
+// Close closes the connection to the API service. **Always** call Close() when
 // the client is no longer required.
 func (c *TextToSpeechLongAudioSynthesizeClient) Close() error {
 	return c.internalClient.Close()
@@ -274,7 +275,7 @@ func (c *textToSpeechLongAudioSynthesizeGRPCClient) setGoogleClientInfo(keyval .
 	}
 }
 
-// Close closes the connection to the API service. The user should invoke this when
+// Close closes the connection to the API service. **Always** call Close() when
 // the client is no longer required.
 func (c *textToSpeechLongAudioSynthesizeGRPCClient) Close() error {
 	return c.connPool.Close()
@@ -384,7 +385,7 @@ func (c *textToSpeechLongAudioSynthesizeRESTClient) setGoogleClientInfo(keyval .
 	}
 }
 
-// Close closes the connection to the API service. The user should invoke this when
+// Close closes the connection to the API service. **Always** call Close() when
 // the client is no longer required.
 func (c *textToSpeechLongAudioSynthesizeRESTClient) Close() error {
 	// Replace httpClient with nil to force cleanup.
@@ -416,8 +417,12 @@ func (c *textToSpeechLongAudioSynthesizeGRPCClient) SynthesizeLongAudio(ctx cont
 	if err != nil {
 		return nil, err
 	}
+	lro := longrunning.InternalNewOperationWithMetadata(*c.LROClient, resp, "*texttospeech.SynthesizeLongAudioOperation")
+	if gax.IsFeatureEnabled("TRACING") {
+		lro.SetParentSpanContext(trace.SpanContextFromContext(ctx))
+	}
 	return &SynthesizeLongAudioOperation{
-		lro: longrunning.InternalNewOperation(*c.LROClient, resp),
+		lro: lro,
 	}, nil
 }
 
@@ -548,8 +553,12 @@ func (c *textToSpeechLongAudioSynthesizeRESTClient) SynthesizeLongAudio(ctx cont
 	}
 
 	override := fmt.Sprintf("/v1/%s", resp.GetName())
+	lro := longrunning.InternalNewOperationWithMetadata(*c.LROClient, resp, "*texttospeech.SynthesizeLongAudioOperation")
+	if gax.IsFeatureEnabled("TRACING") {
+		lro.SetParentSpanContext(trace.SpanContextFromContext(ctx))
+	}
 	return &SynthesizeLongAudioOperation{
-		lro:      longrunning.InternalNewOperation(*c.LROClient, resp),
+		lro:      lro,
 		pollPath: override,
 	}, nil
 }
@@ -696,7 +705,7 @@ func (c *textToSpeechLongAudioSynthesizeRESTClient) ListOperations(ctx context.C
 // The name must be that of a previously created SynthesizeLongAudioOperation, possibly from a different process.
 func (c *textToSpeechLongAudioSynthesizeGRPCClient) SynthesizeLongAudioOperation(name string) *SynthesizeLongAudioOperation {
 	return &SynthesizeLongAudioOperation{
-		lro: longrunning.InternalNewOperation(*c.LROClient, &longrunningpb.Operation{Name: name}),
+		lro: longrunning.InternalNewOperationWithMetadata(*c.LROClient, &longrunningpb.Operation{Name: name}, "*texttospeech.SynthesizeLongAudioOperation"),
 	}
 }
 
@@ -705,7 +714,7 @@ func (c *textToSpeechLongAudioSynthesizeGRPCClient) SynthesizeLongAudioOperation
 func (c *textToSpeechLongAudioSynthesizeRESTClient) SynthesizeLongAudioOperation(name string) *SynthesizeLongAudioOperation {
 	override := fmt.Sprintf("/v1/%s", name)
 	return &SynthesizeLongAudioOperation{
-		lro:      longrunning.InternalNewOperation(*c.LROClient, &longrunningpb.Operation{Name: name}),
+		lro:      longrunning.InternalNewOperationWithMetadata(*c.LROClient, &longrunningpb.Operation{Name: name}, "*texttospeech.SynthesizeLongAudioOperation"),
 		pollPath: override,
 	}
 }
