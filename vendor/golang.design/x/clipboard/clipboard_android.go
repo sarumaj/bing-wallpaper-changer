@@ -30,9 +30,13 @@ func initialize() error { return nil }
 
 // enumerateFormats reports the formats on the clipboard. The Android bridge
 // exposes only text and no enumeration API, so Formats() returns empty.
-func enumerateFormats() []Format { return nil }
+func enumerateFormats(ctx context.Context, sel selection) []Format { return nil }
 
-func read(t Format) (buf []byte, err error) {
+func read(ctx context.Context, sel selection, t Format) (buf []byte, err error) {
+	if sel == selPrimary {
+		// No primary selection on this platform (see FromPrimary).
+		return nil, errUnsupported
+	}
 	switch t {
 	case FmtText:
 		s := ""
@@ -52,7 +56,7 @@ func read(t Format) (buf []byte, err error) {
 	case FmtImage:
 		return nil, errUnsupported
 	default:
-		// The Android bridge handles only text; images and custom MIME
+		// The Android bridge handles only text; images, file lists and custom MIME
 		// formats registered via Register degrade to nil here.
 		return nil, errUnsupported
 	}
@@ -60,7 +64,12 @@ func read(t Format) (buf []byte, err error) {
 
 // write writes the given data to clipboard and
 // returns true if success or false if failed.
-func write(t Format, buf []byte) (<-chan struct{}, error) {
+func write(ctx context.Context, sel selection, t Format, buf []byte) (<-chan struct{}, error) {
+	if sel == selPrimary {
+		// No primary selection here, and redirecting to the ordinary clipboard
+		// would destroy what the user had copied (see FromPrimary).
+		return nil, errUnsupported
+	}
 	done := make(chan struct{}, 1)
 	switch t {
 	case FmtText:
@@ -78,16 +87,27 @@ func write(t Format, buf []byte) (<-chan struct{}, error) {
 	case FmtImage:
 		return nil, errUnsupported
 	default:
-		// The Android bridge handles only text; images and custom MIME
+		// The Android bridge handles only text; images, file lists and custom MIME
 		// formats registered via Register degrade to a no-op here.
 		return nil, errUnsupported
 	}
 }
 
-func watch(ctx context.Context, t Format) <-chan []byte {
+// writeAll publishes the most preferred item only. This platform has no
+// multi-representation clipboard, and writing each item in turn would be worse
+// than useless: every write replaces the last, so the *least* preferred
+// representation would win — the reverse of what the caller asked for (#151).
+func writeAll(ctx context.Context, sel selection, items []Item, loops int) (<-chan struct{}, error) {
+	// loops is ignored: this platform's clipboard is a store the OS serves, so
+	// no paste request ever reaches this process to be counted (see Loops).
+	_ = loops
+	return write(ctx, sel, items[0].Format, items[0].Bytes)
+}
+
+func watch(ctx context.Context, sel selection, t Format) <-chan []byte {
 	recv := make(chan []byte, 1)
 	ti := time.NewTicker(time.Second)
-	last := Read(t)
+	last, _ := Read(ctx, t, withSelection(sel))
 	go func() {
 		defer ti.Stop()
 		for {
@@ -96,7 +116,7 @@ func watch(ctx context.Context, t Format) <-chan []byte {
 				close(recv)
 				return
 			case <-ti.C:
-				b := Read(t)
+				b, _ := Read(ctx, t, withSelection(sel)) // a failed read is nothing new to report
 				if b == nil {
 					continue
 				}
