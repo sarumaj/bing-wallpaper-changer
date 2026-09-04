@@ -8,12 +8,16 @@ import "golang.design/x/clipboard"
 
 ## Features
 
-- Cross platform supports: **macOS, Linux (X11 and Wayland), Windows, BSD (X11), iOS, and Android**
+- Cross platform supports: **macOS, Linux (X11 and Wayland), Windows, BSD (X11), iOS, Android, and the browser (js/wasm, text only)**
 - **Cgo-free on desktop** (macOS, Linux, Windows, BSD) — no C toolchain at build time, no `libX11`/`libwayland` at runtime
 - Copy/paste UTF-8 text
 - Copy/paste PNG-encoded images (Desktop-only); `Write` also accepts other encodings when their decoder is registered
 - Register and copy/paste custom MIME-typed formats (Desktop-only, raw passthrough)
-- Watch the clipboard for changes (event-driven on Wayland)
+- Copy/paste files (`FmtFiles`), the way a file manager does
+- Read, write and watch the X11/Wayland primary (middle-click) selection
+- Limit how many times a write is served before it is dropped (X11/Wayland)
+- Publish several formats in one copy (`WriteAll`), e.g. `text/html` + `text/plain`
+- Watch the clipboard for changes (event-driven on Wayland and Windows)
 - Discover what's on the clipboard with `Formats()` / `Format.MIME` (Desktop-only)
 - Command `gclip` as a demo application
 - Mobile app `gclip-gui` as a demo application
@@ -33,18 +37,60 @@ if err != nil {
 }
 ```
 
+## Migrating to v0.9.0
+
+v0.9.0 changes every call that moves bytes to take a `context.Context` and return
+an `error`. This is a breaking change; the package is pre-1.0, so it arrives as a
+minor version rather than a new import path.
+
+Why it is worth the churn: `Read` used to return `nil` for *every* failure, so
+you could not tell an empty clipboard from a missing X server — the package even
+carried an internal debug flag whose only job was printing that difference to
+stderr. And a read had no way to be bounded: on X11 it could sit for five
+seconds with no way for you to say otherwise.
+
+| before | after |
+|---|---|
+| `b := clipboard.Read(f)` | `b, err := clipboard.Read(ctx, f)` |
+| `ch := clipboard.Write(f, b)` | `ch, err := clipboard.Write(ctx, f, b)` |
+| `ch := clipboard.WriteAll(items...)` | `ch, err := clipboard.WriteAll(ctx, items...)` |
+| `fs := clipboard.Formats()` | `fs, err := clipboard.Formats(ctx)` |
+| `p := clipboard.ReadFiles()` | `p, err := clipboard.ReadFiles(ctx)` |
+| `clipboard.WriteFiles(paths)` | `clipboard.WriteFiles(ctx, paths)` |
+| `clipboard.ReadAs(f, dec)` | `clipboard.ReadAs(ctx, f, dec)` |
+
+`Watch` is unchanged — it already took a context.
+
+Passing `context.TODO()` everywhere is a correct first step, and code that
+ignored failures before can keep doing so with `_`. When you do want the error,
+three sentinels tell the cases apart:
+
+```go
+b, err := clipboard.Read(ctx, clipboard.FmtImage)
+switch {
+case errors.Is(err, clipboard.ErrNoData):      // nothing to paste
+case errors.Is(err, clipboard.ErrUnavailable): // no clipboard to reach
+case errors.Is(err, clipboard.ErrUnsupported): // not possible on this platform
+}
+```
+
+The context is honored as far as each platform allows: every backend checks it
+before starting, and X11 applies your deadline to the wire read, capped by the
+package's own ceiling. Elsewhere the calls are effectively immediate, so the
+entry check is the whole of it — promising more would be a lie.
+
 The most common operations are `Read` and `Write`. To use them:
 
 ```go
 // write/read text format data of the clipboard, and
 // the byte buffer regarding the text are UTF8 encoded.
-clipboard.Write(clipboard.FmtText, []byte("text data"))
-clipboard.Read(clipboard.FmtText)
+clipboard.Write(ctx, clipboard.FmtText, []byte("text data"))
+clipboard.Read(ctx, clipboard.FmtText)
 
 // write/read image format data of the clipboard, and
 // the byte buffer regarding the image are PNG encoded.
-clipboard.Write(clipboard.FmtImage, []byte("image data"))
-clipboard.Read(clipboard.FmtImage)
+clipboard.Write(ctx, clipboard.FmtImage, []byte("image data"))
+clipboard.Read(ctx, clipboard.FmtImage)
 ```
 
 Note that the clipboard serves images as PNG (it serves the alpha-blending
@@ -61,13 +107,81 @@ to the clipboard is outdated, meaning the clipboard has been overwritten
 by others and the previously written data is lost. For instance:
 
 ```go
-changed := clipboard.Write(clipboard.FmtText, []byte("text data"))
+changed := clipboard.Write(ctx, clipboard.FmtText, []byte("text data"))
 
 select {
 case <-changed:
       println(`"text data" is no longer available from clipboard.`)
 }
 ```
+
+On X11 and Wayland there are **two** clipboards: the Ctrl+C one, and the
+*primary selection*, which holds whatever was last selected with the mouse and
+is pasted with the middle button. `FromPrimary()` reaches the second one, and
+every operation accepts it:
+
+```go
+sel, _ := clipboard.Read(ctx, clipboard.FmtText, clipboard.FromPrimary())
+clipboard.Write(ctx, clipboard.FmtText, []byte("hi"), clipboard.FromPrimary())
+ch := clipboard.Watch(ctx, clipboard.FmtText, clipboard.FromPrimary())
+```
+
+Windows and macOS have no second clipboard, so a primary read returns `nil` and
+a primary write is a no-op there.
+
+`Loops(n)` limits how many times the written data is handed to a pasting
+application before it is dropped — putting a secret on the clipboard and having
+it disappear once pasted:
+
+```go
+clipboard.Write(ctx, clipboard.FmtText, password, clipboard.Loops(1))
+```
+
+**It works on X11 and Wayland only**, and is silently ignored on Windows, macOS
+and mobile, so it is *not* a way to clear a secret from a Windows or macOS
+clipboard. The difference is in the platforms: on X11 and Wayland the writer owns
+the selection and personally answers each paste request, so it can count them and
+give up ownership, whereas a Windows or macOS write copies the bytes into an
+OS-owned store and never hears about them again.
+
+To copy or paste **files** — what a file manager puts on the clipboard when you
+press Ctrl+C on a selection — use `WriteFiles` and `ReadFiles`:
+
+```go
+clipboard.WriteFiles(ctx, []string{"/home/me/report.pdf", "/home/me/notes.txt"})
+
+paths, _ := clipboard.ReadFiles(ctx)
+for _, path := range paths {
+      println(path)
+}
+```
+
+Each platform stores a file list its own way — `CF_HDROP` on Windows,
+`NSFilenamesPboardType` on macOS, `text/uri-list` on X11 and Wayland — and
+`FmtFiles` translates between them, so the same code works everywhere and
+interoperates with Explorer, Finder, Nautilus and Dolphin. `FmtFiles` is a
+normal built-in: it works with `Read`, `Write`, `Watch`, `WriteAll` and
+`Formats`, and its portable byte encoding is a `text/uri-list` body (RFC 2483),
+which `Read(FmtFiles)` returns directly. Desktop only — on iOS, Android and
+CGO-disabled builds a file list is neither readable nor writable.
+
+To publish several representations of the same content at once — the "copy
+rich text" behaviour, where the destination app takes the richest format it
+understands — use `WriteAll`. Order is preference, most preferred first:
+
+```go
+html := clipboard.Register("text/html")
+clipboard.WriteAll(ctx,
+      clipboard.Item{Format: html, Bytes: []byte("<b>hi</b>")},
+      clipboard.Item{Format: clipboard.FmtText, Bytes: []byte("hi")},
+)
+```
+
+Calling `Write` twice does *not* do this: every write replaces the whole
+clipboard, so only the last format would survive. `WriteAll` puts them all on
+in one transaction. It works on macOS, Windows, Linux/X11, BSD/X11 and
+Linux/Wayland; on iOS, Android and CGO-disabled builds only the most preferred
+item is published.
 
 You can ignore the returning channel if you don't need this type of
 notification. Furthermore, when you need more than just knowing whether
@@ -106,14 +220,23 @@ idempotent and safe to call before `Init`:
 
 ```go
 html := clipboard.Register("text/html")
-clipboard.Write(html, []byte("<b>hi</b>"))
-b := clipboard.Read(html)
+clipboard.Write(ctx, html, []byte("<b>hi</b>"))
+b, _ := clipboard.Read(ctx, html)
 
 // Or decode into a typed value with ReadAs:
-doc, err := clipboard.ReadAs(html, func(b []byte) (*Node, error) {
+doc, err := clipboard.ReadAs(ctx, html, func(b []byte) (*Node, error) {
       return parseHTML(b)
 })
 ```
+
+The MIME type is the portable identity; each backend resolves it to the type
+that platform's applications actually publish. Linux/X11, BSD and Wayland speak
+MIME natively, whereas macOS pasteboard types (UTIs) and Windows registered
+format names are their own namespaces, so a best-effort alias table maps between
+them: `Register("image/png")` reads and writes the `PNG` clipboard format on
+Windows and `public.png` on macOS — the types Chromium, Firefox, Office and
+Preview use. A MIME type with no alias is used verbatim, which round-trips with
+this library but is not necessarily understood by other applications.
 
 Custom-format support is per platform:
 
@@ -130,7 +253,8 @@ available formats (registering any custom MIME types it finds on demand), and
 `Format.MIME` reports a token's identity:
 
 ```go
-for _, f := range clipboard.Formats() {
+formats, _ := clipboard.Formats(ctx)
+for _, f := range formats {
       switch f {
       case clipboard.FmtText:
             println("text")
@@ -223,6 +347,16 @@ accessing system clipboards, but here are a few details you might need to know.
 
 ### Caveats
 
+- **Browser (js/wasm).** `FmtText` reads and writes go through
+  `navigator.clipboard`, which needs a **secure context** (https, or localhost in
+  development) — `Init` says so when it is missing. Two browser rules apply and
+  neither is this package's to lift: a **read needs a user gesture** and a
+  permission grant, so `Read` called from `main` is denied by the browser; and
+  because Go's wasm scheduler runs on the JS event loop, `Read`/`Write` must run
+  on a **goroutine started by** an event handler rather than directly inside it,
+  or the handler never returns and the Promise never settles. Images, custom
+  formats, `Watch` and `Formats` report `ErrUnsupported` rather than pretending.
+
 - **Linux/X11 clipboard ownership.** On X11 the process that writes to
   the clipboard *owns* the selection and serves its content to other
   applications on demand. Once the writing process exits, the data is
@@ -232,18 +366,38 @@ accessing system clipboards, but here are a few details you might need to know.
   written data available after your program exits, keep the process
   running (the channel returned by `Write` reports when the data is no
   longer needed) or rely on a clipboard manager.
-- **Linux/X11 selection.** Only the `CLIPBOARD` selection (Ctrl+C/Ctrl+V)
-  is accessed; the `PRIMARY` selection (middle-click paste) is not
-  supported.
+- **Primary selection.** `FromPrimary()` reaches the middle-click selection on
+  X11 and Wayland. On Wayland it needs a compositor offering version 2 of a
+  data-control manager; below that, and on Windows and macOS, a primary read
+  returns `nil` and a primary write is a no-op — deliberately not redirected to
+  the ordinary clipboard, which would destroy what the user had copied. The X11
+  `SECONDARY` selection is not exposed.
+- **File lists.** `FmtFiles` carries paths, not file contents: copying a file
+  puts its path on the clipboard, and the file itself must still exist when the
+  paste happens. The "cut" flag Explorer sets alongside `CF_HDROP` to mean move
+  rather than copy is not exposed, so a paste target reads every list as a copy.
 - **Image format.** `Read(FmtImage)` always returns PNG. `Write(FmtImage, ...)`
   accepts PNG and normalizes other encodings to PNG when the matching decoder is
   registered (blank-import it, e.g. `_ "image/jpeg"`). Use a custom format
   (`Register`) for raw, unconverted bytes.
+- **Windows services (Session 0).** A Windows service runs in Session 0, on its
+  own non-interactive window station — and a clipboard belongs to a window
+  station, not to the machine. A service therefore gets a clipboard that works
+  but that nothing else can see: `Write` succeeds, `Read` returns what that same
+  service wrote, and `Watch` never fires for anything the logged-in user copies,
+  because the user's Ctrl+C lands on a different clipboard entirely. This is a
+  Windows design constraint, not something the package can work around; "Allow
+  service to interact with desktop" does not bridge it either, since that only
+  reaches Session 0's own desktop. Run the clipboard work in a process inside
+  the interactive session — a helper the service launches with
+  `CreateProcessAsUser` against the token from
+  `WTSQueryUserToken(WTSGetActiveConsoleSessionId())`, talking to the service
+  over IPC — rather than in the service itself.
 - **Wayland.** The native Wayland backend uses the data-control protocol,
   which works without keyboard focus. Compositors that do not implement
   `ext-data-control-v1` or `zwlr_data_control_manager_v1` (e.g. GNOME
   before 49) are not supported natively; the package falls back to X11 via
-  XWayland there. The `PRIMARY` selection is not exposed on Wayland either.
+  XWayland there.
 
 ### Screenshot
 
@@ -254,9 +408,10 @@ There are system level shortcuts to put screenshot image into your system clipbo
 - On Linux/Ubuntu, use `Ctrl+Shift+PrintScreen`
 - On Windows, use `Shift+Win+s`
 
-The built-in formats are UTF-8 encoded plain text (`FmtText`) and PNG encoded
-images (`FmtImage`). Arbitrary types can be exchanged as custom MIME formats via
-`Register` (raw passthrough). On mobile (iOS/Android) only text is supported.
+The built-in formats are UTF-8 encoded plain text (`FmtText`), PNG encoded
+images (`FmtImage`), and file lists (`FmtFiles`, a `text/uri-list` body).
+Arbitrary types can be exchanged as custom MIME formats via `Register` (raw
+passthrough). On mobile (iOS/Android) only text is supported.
 
 ## Who is using this package?
 

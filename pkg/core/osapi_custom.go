@@ -4,6 +4,7 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"image/png"
@@ -308,6 +309,7 @@ func makeApiCommand(item *systray.MenuItem, addr, verb, path, query, payload str
 			logger.Logger.Printf("Failed to initialize clipboard: %v", clipboardErr)
 			return
 		}
+
 		uri := &url.URL{
 			Scheme:   "http",
 			Host:     addr,
@@ -318,7 +320,12 @@ func makeApiCommand(item *systray.MenuItem, addr, verb, path, query, payload str
 		if payload != "" {
 			cmd += " -d '" + payload + "'"
 		}
-		_ = clipboard.Write(clipboard.FmtText, []byte(cmd))
+
+		_, err := clipboard.Write(context.Background(), clipboard.FmtText, []byte(cmd))
+		if err != nil {
+			logger.Logger.Printf("Failed to copy API command to clipboard: %v", err)
+			return
+		}
 	})
 }
 
@@ -397,7 +404,9 @@ func makePropertyCopyAction(item *systray.MenuItem, img *Image, format clipboard
 			return
 		}
 
-		_ = clipboard.Write(format, getter(img))
+		if _, err := clipboard.Write(context.Background(), format, getter(img)); err != nil {
+			logger.Logger.Printf("Failed to copy %s to clipboard: %v", item, err)
+		}
 	})
 }
 
