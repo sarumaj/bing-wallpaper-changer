@@ -226,6 +226,8 @@ github.com/sarumaj/go-kakasi v1.0.5 h1:PC32nHZ7PXwXinU9I65CaHuJI0yTmAgKNyP5DMCd5
 github.com/sarumaj/go-kakasi v1.0.5/go.mod h1:rpQlO7PT2+iDdAGT2ldGNyFD62iYP24E0rHdCNd9wRw=
 github.com/sarumaj/go-kakasi v1.1.0 h1:I6K30AJ9lJctVNUMyaHvFwCNUuZE33kKtM6cxlfcVIA=
 github.com/sarumaj/go-kakasi v1.1.0/go.mod h1:EXcC18KC1Xlg5s0qOS13NuhuCX7CksMY5ObmH+TUn9k=
+github.com/sarumaj/go-kakasi v1.1.1 h1:SL3Vq1Ny0WcLdnV02islrSDT4loTplLsvVci8wwNZF4=
+github.com/sarumaj/go-kakasi v1.1.1/go.mod h1:Bhbz7v36XuNx7piSBay8TQ7ibwzYa2XDE/qavf/q4xQ=
 github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3 h1:LRXv2VU2v7Iy3U5kO3iGeKSBG+Qr5dIxqHI7+624BBo=
 github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3/go.mod h1:VEkQtqJzKqpNIXEUaJFgKhptjpMfckyU90pdi+TXVFM=
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
