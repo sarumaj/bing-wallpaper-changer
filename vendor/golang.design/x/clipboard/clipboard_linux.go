@@ -9,8 +9,8 @@
 package clipboard
 
 // Linux clipboard dispatch. Both backends are pure Go: the native Wayland
-// backend (clipboard_wayland_linux.go) when a data-control manager is present,
-// otherwise the X11 backend (clipboard_x11_linux.go). Neither needs Cgo, so the
+// backend (clipboard_wayland.go) when a data-control manager is present,
+// otherwise the X11 backend (clipboard_x11.go). Neither needs Cgo, so the
 // package builds and runs on Linux with CGO_ENABLED=0 and no C toolchain.
 
 import (
@@ -112,4 +112,17 @@ func watch(ctx context.Context, sel selection, t Format) <-chan []byte {
 		}
 	}()
 	return recv
+}
+
+// sensitive reports whether the content was marked sensitive (see Sensitive):
+// by the Wayland offer's MIME types, or the X11 selection's targets.
+func sensitive(ctx context.Context, sel selection) (bool, error) {
+	if useWayland {
+		mimes, err := wlSelectionMIMEs(sel)
+		if err != nil {
+			return false, err
+		}
+		return containsAny(mimes, x11SensitiveTarget), nil
+	}
+	return x11Sensitive(ctx, sel)
 }
