@@ -21,7 +21,7 @@ require (
 	github.com/tidwall/gjson v1.20.0
 	golang.design/x/clipboard v0.11.0
 	golang.org/x/image v0.47.0
-	golang.org/x/net v0.61.0
+	golang.org/x/net v0.62.0
 	google.golang.org/api v0.307.0
 )
 
@@ -50,7 +50,6 @@ require (
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/go-github/v74 v74.0.0 // indirect
 	github.com/google/go-github/v86 v86.0.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
@@ -62,7 +61,6 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/tevino/abool v0.0.0-20220530134649-2bfc934cb23c // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
