@@ -1,15 +1,9 @@
-[![test_and_report](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/test_and_report.yml/badge.svg)](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/test_and_report.yml)
-[![build_and_release](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/build_and_release.yml/badge.svg)](https://github.com/sarumaj/bing-wallpaper-changer/actions/workflows/build_and_release.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sarumaj/bing-wallpaper-changer)](https://goreportcard.com/report/github.com/sarumaj/bing-wallpaper-changer)
+[![test_and_report](https://git.ciepiela.org/dawid/bing-wallpaper-changer/actions/workflows/test_and_report.yml/badge.svg)](https://git.ciepiela.org/dawid/bing-wallpaper-changer/actions?workflow=test_and_report.yml)
 [![Maintainability](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer/maintainability.svg)](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer)
-[![Code Coverage](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer/coverage.svg)](https://qlty.sh/gh/sarumaj/projects/bing-wallpaper-changer)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sarumaj/bing-wallpaper-changer.svg)](https://pkg.go.dev/github.com/sarumaj/bing-wallpaper-changer)
 [![Go version](https://img.shields.io/github/go-mod/go-version/sarumaj/bing-wallpaper-changer?logo=go&label=&labelColor=gray)](https://go.dev)
-[![Release](https://img.shields.io/github/v/release/sarumaj/bing-wallpaper-changer?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
-[![Release Date](https://img.shields.io/github/release-date/sarumaj/bing-wallpaper-changer?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
-[![Commits since latest release](https://img.shields.io/github/commits-since/sarumaj/bing-wallpaper-changer/latest?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
+[![Release](https://img.shields.io/gitea/v/release/dawid/bing-wallpaper-changer?gitea_url=https%3A%2F%2Fgit.ciepiela.org&logo=forgejo)](https://git.ciepiela.org/dawid/bing-wallpaper-changer/releases/latest)
 [![Downloads (all assets, all releases)](https://img.shields.io/github/downloads/sarumaj/bing-wallpaper-changer/total?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases)
-[![Downloads (all assets, latest release)](https://img.shields.io/github/downloads/sarumaj/bing-wallpaper-changer/latest/total?logo=github)](https://github.com/sarumaj/bing-wallpaper-changer/releases/latest)
 
 ---
 
