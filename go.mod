@@ -18,7 +18,7 @@ require (
 	github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.10
-	github.com/tidwall/gjson v1.20.1
+	github.com/tidwall/gjson v1.20.2
 	golang.design/x/clipboard v0.11.0
 	golang.org/x/image v0.47.0
 	golang.org/x/net v0.61.0
@@ -62,7 +62,7 @@ require (
 	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tidwall/pretty v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	gitlab.com/gitlab-org/api/client-go v1.46.0 // indirect
