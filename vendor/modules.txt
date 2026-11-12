@@ -177,8 +177,8 @@ github.com/go-logr/logr/funcr
 # github.com/go-logr/stdr v1.2.2
 ## explicit; go 1.16
 github.com/go-logr/stdr
-# github.com/goccy/go-json v0.10.6
-## explicit; go 1.19
+# github.com/goccy/go-json v0.11.2
+## explicit; go 1.23
 github.com/goccy/go-json
 github.com/goccy/go-json/internal/decoder
 github.com/goccy/go-json/internal/encoder
@@ -282,7 +282,7 @@ github.com/pkg/browser
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/sarumaj/go-kakasi v1.1.1
+# github.com/sarumaj/go-kakasi v1.1.2
 ## explicit; go 1.26.0
 github.com/sarumaj/go-kakasi
 github.com/sarumaj/go-kakasi/internal/codegen

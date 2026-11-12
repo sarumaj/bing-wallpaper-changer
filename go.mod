@@ -14,7 +14,7 @@ require (
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
-	github.com/sarumaj/go-kakasi v1.1.1
+	github.com/sarumaj/go-kakasi v1.1.2
 	github.com/sarumaj/go-wallpaper v0.0.0-20241230142734-205ab0bc29a3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/pflag v1.0.10
@@ -47,7 +47,7 @@ require (
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/goccy/go-json v0.10.6 // indirect
+	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/go-github/v86 v86.0.0 // indirect
