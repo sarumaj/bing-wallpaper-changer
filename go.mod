@@ -8,7 +8,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/corpix/uarand v0.2.0
-	github.com/creativeprojects/go-selfupdate v1.7.0
+	github.com/creativeprojects/go-selfupdate v1.7.1
 	github.com/energye/systray v1.0.3
 	github.com/fogleman/gg v1.3.0
 	github.com/gopxl/beep/v2 v2.1.1
@@ -50,7 +50,7 @@ require (
 	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/go-github/v86 v86.0.0 // indirect
+	github.com/google/go-github/v93 v93.0.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.11 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.23 // indirect

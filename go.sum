@@ -38,8 +38,8 @@ github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2 h1:aBangftG7EVZoUb69Os
 github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2/go.mod h1:qwXFYgsP6T7XnJtbKlf1HP8AjxZZyzxMmc+Lq5GjlU4=
 github.com/corpix/uarand v0.2.0 h1:U98xXwud/AVuCpkpgfPF7J5TQgr7R5tqT8VZP5KWbzE=
 github.com/corpix/uarand v0.2.0/go.mod h1:/3Z1QIqWkDIhf6XWn/08/uMHoQ8JUoTIKc2iPchBOmM=
-github.com/creativeprojects/go-selfupdate v1.7.0 h1:hFqLlJHZLp2fZm91j+hdjT9EKRjOZ0b5M6bJAgTQwzg=
-github.com/creativeprojects/go-selfupdate v1.7.0/go.mod h1:RVszRkQ0kVQB2hbqrsgrEl+sKGem5nR1qs8qdCicy+U=
+github.com/creativeprojects/go-selfupdate v1.7.1 h1:VSXRAlZR+qQ21+aRySqcqkzuepmwMWA8JLipoEbeQ2g=
+github.com/creativeprojects/go-selfupdate v1.7.1/go.mod h1:VYpbS44bfTFjDHYPKo1Avo3oCFb6OdqpGsSa5vc+2tc=
 github.com/davidmz/go-pageant v1.0.2 h1:bPblRCh5jGU+Uptpz6LgMZGD5hJoOt7otgT454WvHn0=
 github.com/davidmz/go-pageant v1.0.2/go.mod h1:P2EDDnMqIwG5Rrp05dTRITj9z2zpGcD9efWSkTNKLIE=
 github.com/ebitengine/oto/v3 v3.3.3 h1:m6RV69OqoXYSWCDsHXN9rc07aDuDstGHtait7HXSM7g=
@@ -77,8 +77,8 @@ github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/google/go-github/v86 v86.0.0 h1:S/6aANJhwRm8EQmGKVML3j41yq0h2BsTP8FnDkO7kcA=
-github.com/google/go-github/v86 v86.0.0/go.mod h1:zKv1l4SwDXNFMGByi2FWkq71KwSXqj/eQRZuqtmcot8=
+github.com/google/go-github/v93 v93.0.0 h1:qElXPLv+XbSz1qrLdWyb0t3gSYGsWBTzr9T4/PZTCfk=
+github.com/google/go-github/v93 v93.0.0/go.mod h1:l8I3rt4/mdjANKpg4Y84LEy9HJQCetUkZ8WTl2bPU8M=
 github.com/google/go-querystring v1.2.0 h1:yhqkPbu2/OH+V9BfpCVPZkNmUXhb2gBxJArfhIxNtP0=
 github.com/google/go-querystring v1.2.0/go.mod h1:8IFJqpSRITyJ8QhQ13bmbeMBDfmeEJZD5A0egEOmkqU=
 github.com/google/s2a-go v0.1.11 h1:7v1V1TraNGP63WptsAkNqr2w8jgm4vM6A6qx6Lsw9iM=
